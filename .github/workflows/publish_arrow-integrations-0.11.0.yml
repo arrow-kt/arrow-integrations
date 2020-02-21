@@ -1,12 +1,12 @@
-name: "arrow-integrations: publish documentation"
+name: "arrow-integrations: publish in OSS"
 
 on:
   push:
     branches:
-    - master
+    - release/0.11.0
 
 jobs:
-  arrow-integrations_publish_documentation:
+  arrow-integrations_publish:
 
     env:
       BASEDIR: ${{github.workspace}}/..
@@ -21,33 +21,19 @@ jobs:
       with:
         java-version: 1.8
         architecture: x64
+    - name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v1
     - name: Checkout orchestrator
       run: |
         cd $BASEDIR
-        git clone https://github.com/arrow-kt/arrow.git
-    - name: Run Ank for site
-      run: |
-        $BASEDIR/arrow/scripts/site-download.sh
-        $BASEDIR/arrow/scripts/site-run-ank.sh
-    - name: Run Dokka for arrow-integrations
-      run: $BASEDIR/arrow/scripts/project-run-dokka.sh arrow-integrations
-    - name: Run Ank for arrow-integrations
-      run: $BASEDIR/arrow/scripts/project-run-ank.sh arrow-integrations
-    - name: Join docs to site
-      run: $BASEDIR/arrow/scripts/project-locate-doc.sh arrow-integrations
-    - name: Prepare environment
-      run: |
-        $BASEDIR/arrow/scripts/site-prepare-env.sh
-        $BASEDIR/arrow/scripts/install-aws.sh
-    - name: Build site
-      run: $BASEDIR/arrow/scripts/site-build.sh
-    - name: Deploy
+        git clone -b release/0.11.0 https://github.com/arrow-kt/arrow.git
+    - name: Build with Gradle
+      run: $BASEDIR/arrow/scripts/project-build.sh arrow-integrations
+    - name: Publish artifacts
       env:
-        S3_BUCKET: ${{ secrets.S3_BUCKET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_CLOUDFRONT_ID: ${{ secrets.AWS_CLOUDFRONT_ID }}
-      run: $BASEDIR/arrow/scripts/site-publish.sh
+        BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+        BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
+      run: $BASEDIR/arrow/scripts/project-publish.sh arrow-integrations
     - name: Prepare environment to create the issue (new package)
       if: failure()
       id: create-issue
@@ -82,16 +68,5 @@ jobs:
             return content;
           }
           await github.issues.create({...context.repo,
-            title: "DOC: error when merging '${{ steps.create-issue.outputs.title }}' on master branch",
+            title: "BUILD: error when merging '${{ steps.create-issue.outputs.title }}' on release/0.11.0 branch",
             body: readFile("file://${{github.workspace}}/issue.log")});
-    - name: Save content
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        S3_BUCKET: ${{ secrets.S3_BUCKET }}
-        AWS_CLOUDFRONT_ID: ${{ secrets.AWS_CLOUDFRONT_ID }}
-      run: aws s3 ls s3://$S3_BUCKET --recursive --summarize > site-content.log
-    - uses: actions/upload-artifact@v1
-      with:
-        name: site-content
-        path: site-content.log
