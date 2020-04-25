@@ -9,7 +9,6 @@ import arrow.integrations.retrofit.adapter.retrofit.SuspedApiClientTest
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
 import io.kotlintest.Spec
 import io.kotlintest.shouldBe
-import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

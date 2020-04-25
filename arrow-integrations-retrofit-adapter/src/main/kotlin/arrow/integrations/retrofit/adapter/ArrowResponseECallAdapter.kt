@@ -6,7 +6,12 @@ import arrow.core.right
 import okhttp3.Request
 import okhttp3.ResponseBody
 import okio.Timeout
-import retrofit2.*
+import retrofit2.Call
+import retrofit2.CallAdapter
+import retrofit2.Callback
+import retrofit2.Converter
+import retrofit2.Response
+import retrofit2.Retrofit
 import java.lang.reflect.Type
 
 internal class ArrowResponseECallAdapter<E, R>(
