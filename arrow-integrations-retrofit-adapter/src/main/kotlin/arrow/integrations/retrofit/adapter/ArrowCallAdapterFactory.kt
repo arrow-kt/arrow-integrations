@@ -43,7 +43,7 @@ class ArrowCallAdapterFactory : CallAdapter.Factory() {
         }
         val errorType = getParameterUpperBound(0, wrapperType)
         val bodyType = getParameterUpperBound(1, wrapperType)
-        ArrowEitherAdapter<Any, Type>(retrofit, errorType, bodyType)
+        ArrowEitherCallAdapter<Any, Type>(retrofit, errorType, bodyType)
       }
       ResponseE::class.java -> {
         if (wrapperType !is ParameterizedType) {
