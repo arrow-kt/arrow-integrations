@@ -3,11 +3,13 @@ package arrow.integrations.retrofit.adapter
 import arrow.Kind
 import arrow.fx.typeclasses.Async
 import arrow.fx.typeclasses.MonadDefer
+import arrow.integrations.retrofit.adapter.callk.CallK
 import arrow.typeclasses.ApplicativeError
 import arrow.typeclasses.MonadError
 import retrofit2.Call
 import retrofit2.HttpException
 import retrofit2.Response
+import java.lang.reflect.Type
 
 fun <F, R> Response<R>.unwrapBody(apError: ApplicativeError<F, Throwable>): Kind<F, R> =
   if (this.isSuccessful) {
@@ -34,3 +36,16 @@ fun <F, A> Call<A>.runSyncCatch(monadError: MonadError<F, Throwable>): Kind<F, R
       execute()
     }
   }
+
+internal fun parseTypeName(type: Type) =
+  type.toString()
+    .split(".")
+    .last()
+
+
+@Deprecated("CallK moved", ReplaceWith("CallK", "arrow.integrations.retrofit.adapter.callk.CallK"))
+typealias CallK<R> = arrow.integrations.retrofit.adapter.callk.CallK<R>
+@Deprecated("CallKind2CallAdapter moved", ReplaceWith("CallKind2CallAdapter", "arrow.integrations.retrofit.adapter.callk.CallKind2CallAdapter"))
+typealias CallKind2CallAdapter<R> = arrow.integrations.retrofit.adapter.callk.CallKind2CallAdapter<R>
+@Deprecated("CallKindAdapterFactory moved", ReplaceWith("CallKindAdapterFactory", "arrow.integrations.retrofit.adapter.callk.CallKindAdapterFactory"))
+typealias CallKindAdapterFactory = arrow.integrations.retrofit.adapter.callk.CallKindAdapterFactory

@@ -1,6 +1,6 @@
 package arrow.integrations.retrofit.adapter.retrofit
 
-import arrow.integrations.retrofit.adapter.CallKindAdapterFactory
+import arrow.integrations.retrofit.adapter.callk.CallKindAdapterFactory
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

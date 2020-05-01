@@ -1,18 +1,21 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.io
 
+import arrow.fx.IO
+import arrow.integrations.retrofit.adapter.parseTypeName
 import retrofit2.CallAdapter
 import retrofit2.Retrofit
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-class CallKindAdapterFactory : CallAdapter.Factory() {
+class IOAdapterFactory : CallAdapter.Factory() {
 
   companion object {
-    fun create(): CallKindAdapterFactory = CallKindAdapterFactory()
+    fun create(): IOAdapterFactory =
+      IOAdapterFactory()
   }
 
   override fun get(returnType: Type, annotations: Array<Annotation>, retrofit: Retrofit): CallAdapter<*, *>? {
-    val rawType = CallAdapter.Factory.getRawType(returnType)
+    val rawType = getRawType(returnType)
 
     if (returnType !is ParameterizedType) {
       val name = parseTypeName(returnType)
@@ -20,17 +23,12 @@ class CallKindAdapterFactory : CallAdapter.Factory() {
         "$name<Foo> or $name<out Foo>")
     }
 
-    val effectType = CallAdapter.Factory.getParameterUpperBound(0, returnType)
-
-    return if (rawType == CallK::class.java) {
-      CallKind2CallAdapter<Type>(effectType)
+    return if (rawType == IO::class.java) {
+      val effectType = getParameterUpperBound(1, returnType)
+      IOCallAdapter<Type>(effectType)
     } else {
       null
     }
   }
-}
 
-private fun parseTypeName(type: Type) =
-  type.toString()
-    .split(".")
-    .last()
+}

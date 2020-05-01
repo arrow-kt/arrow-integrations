@@ -1,4 +1,4 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.callk
 
 import retrofit2.Call
 import retrofit2.CallAdapter

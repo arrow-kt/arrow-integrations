@@ -1,8 +1,11 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.callk
 
 import arrow.Kind
 import arrow.fx.typeclasses.Async
 import arrow.fx.typeclasses.MonadDefer
+import arrow.integrations.retrofit.adapter.runAsync
+import arrow.integrations.retrofit.adapter.runSyncCatch
+import arrow.integrations.retrofit.adapter.runSyncDeferred
 import arrow.typeclasses.MonadError
 import retrofit2.Call
 import retrofit2.Response
