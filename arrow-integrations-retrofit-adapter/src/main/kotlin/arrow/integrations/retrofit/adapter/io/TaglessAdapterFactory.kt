@@ -14,11 +14,9 @@ import java.lang.reflect.Type
 class TaglessAdapterFactory<F>(private val async: Async<F>) : CallAdapter.Factory() {
 
   companion object {
-    fun createIO(): TaglessAdapterFactory<IOPartialOf<Throwable>> =
-      TaglessAdapterFactory(IO.async())
+    fun createIO(): TaglessAdapterFactory<IOPartialOf<Throwable>> = TaglessAdapterFactory(IO.async())
 
-    fun <F> create(async: Async<F>): TaglessAdapterFactory<F> =
-      TaglessAdapterFactory(async)
+    fun <F> create(async: Async<F>): TaglessAdapterFactory<F> = TaglessAdapterFactory(async)
   }
 
   override fun get(returnType: Type, annotations: Array<Annotation>, retrofit: Retrofit): CallAdapter<*, *>? {

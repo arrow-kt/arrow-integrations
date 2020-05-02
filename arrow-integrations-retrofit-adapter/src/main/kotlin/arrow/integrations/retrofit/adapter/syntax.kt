@@ -42,7 +42,6 @@ internal fun parseTypeName(type: Type) =
     .split(".")
     .last()
 
-
 @Deprecated("CallK moved", ReplaceWith("CallK", "arrow.integrations.retrofit.adapter.callk.CallK"))
 typealias CallK<R> = arrow.integrations.retrofit.adapter.callk.CallK<R>
 @Deprecated("CallKind2CallAdapter moved", ReplaceWith("CallKind2CallAdapter", "arrow.integrations.retrofit.adapter.callk.CallKind2CallAdapter"))

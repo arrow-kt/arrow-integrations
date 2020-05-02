@@ -9,8 +9,7 @@ import java.lang.reflect.Type
 class CallKindAdapterFactory : CallAdapter.Factory() {
 
   companion object {
-    fun create(): CallKindAdapterFactory =
-      CallKindAdapterFactory()
+    fun create(): CallKindAdapterFactory = CallKindAdapterFactory()
   }
 
   override fun get(returnType: Type, annotations: Array<Annotation>, retrofit: Retrofit): CallAdapter<*, *>? {
@@ -31,5 +30,3 @@ class CallKindAdapterFactory : CallAdapter.Factory() {
     }
   }
 }
-
-

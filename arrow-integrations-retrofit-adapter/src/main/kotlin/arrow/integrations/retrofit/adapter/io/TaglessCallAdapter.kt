@@ -7,7 +7,11 @@ import arrow.core.extensions.either.applicativeError.applicativeError
 import arrow.core.fix
 import arrow.fx.typeclasses.Async
 import arrow.typeclasses.ApplicativeError
-import retrofit2.*
+import retrofit2.Call
+import retrofit2.CallAdapter
+import retrofit2.Callback
+import retrofit2.HttpException
+import retrofit2.Response
 import java.lang.reflect.Type
 
 class TaglessCallAdapter<F, R>(private val type: Type, private val async: Async<F>) : CallAdapter<R, Kind<F, R>> {
