@@ -5,7 +5,7 @@ import arrow.fx.IO
 import arrow.fx.extensions.io.async.async
 import arrow.fx.fix
 import arrow.fx.unsafeRunSync
-import arrow.integrations.retrofit.adapter.retrofit.ApiClientTest
+import arrow.integrations.retrofit.adapter.retrofit.CallKApiClientTest
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
 import io.kotlintest.fail
 import okhttp3.HttpUrl
@@ -36,4 +36,4 @@ class ResponseCallbackTest : UnitSpec() {
   }
 }
 
-private fun createApiClientTest(baseUrl: HttpUrl) = retrofit(baseUrl).create(ApiClientTest::class.java)
+private fun createApiClientTest(baseUrl: HttpUrl) = retrofit(baseUrl).create(CallKApiClientTest::class.java)

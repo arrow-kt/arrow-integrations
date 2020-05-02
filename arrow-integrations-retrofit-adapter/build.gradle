@@ -28,5 +28,6 @@ dependencies {
     testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
     testCompile "io.arrow-kt:arrow-fx-rx2:$VERSION_NAME"
+    testCompile "io.arrow-kt:arrow-fx-reactor:$VERSION_NAME"
     testCompile "io.arrow-kt:arrow-fx:$VERSION_NAME"
 }

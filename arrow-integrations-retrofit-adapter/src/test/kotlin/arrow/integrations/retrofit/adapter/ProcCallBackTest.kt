@@ -6,7 +6,6 @@ import arrow.core.fix
 import arrow.core.test.UnitSpec
 import arrow.fx.IO
 import arrow.fx.extensions.io.async.async
-import arrow.fx.fix
 import arrow.fx.rx2.ObservableK
 import arrow.fx.rx2.extensions.observablek.applicativeError.applicativeError
 import arrow.fx.rx2.extensions.observablek.monadDefer.monadDefer
@@ -14,7 +13,7 @@ import arrow.fx.rx2.fix
 import arrow.fx.rx2.value
 import arrow.fx.unsafeRunSync
 import arrow.integrations.retrofit.adapter.mock.ResponseMock
-import arrow.integrations.retrofit.adapter.retrofit.ApiClientTest
+import arrow.integrations.retrofit.adapter.retrofit.CallKApiClientTest
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
 import io.kotlintest.fail
 import okhttp3.HttpUrl
@@ -70,4 +69,4 @@ class ProcCallBackTest : UnitSpec() {
   }
 }
 
-private fun createApiClientTest(baseUrl: HttpUrl) = retrofit(baseUrl).create(ApiClientTest::class.java)
+private fun createApiClientTest(baseUrl: HttpUrl) = retrofit(baseUrl).create(CallKApiClientTest::class.java)

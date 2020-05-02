@@ -3,7 +3,7 @@ package arrow.integrations.retrofit.adapter
 import arrow.core.Option
 import arrow.core.test.UnitSpec
 import arrow.fx.IO
-import arrow.integrations.retrofit.adapter.io.IOAdapterFactory
+import arrow.integrations.retrofit.adapter.io.TaglessAdapterFactory
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
 import com.google.gson.reflect.TypeToken
 import io.kotlintest.shouldBe
@@ -13,7 +13,7 @@ import okhttp3.HttpUrl
 private val NO_ANNOTATIONS = emptyArray<Annotation>()
 
 private val retrofit = retrofit(HttpUrl.parse("http://localhost:1")!!)
-private val factory = IOAdapterFactory.create()
+private val factory = TaglessAdapterFactory.createIO()
 
 class IOCallAdapterFactoryTest : UnitSpec() {
   init {
@@ -34,8 +34,8 @@ class IOCallAdapterFactoryTest : UnitSpec() {
     }
 
     "Should work for IO types" {
-      factory.get(object : TypeToken<IO<Throwable, String>>() {}.type, NO_ANNOTATIONS, retrofit)!!
-        .responseType() shouldBe String::class.java
+      factory.get(object : TypeToken<IO<Throwable, String>>() {}.type, NO_ANNOTATIONS, retrofit)
+        ?.responseType() shouldBe String::class.java
     }
   }
 }
