@@ -35,5 +35,4 @@ class TaglessAdapterFactory<F>(private val async: Async<F>) : CallAdapter.Factor
       null
     }
   }
-
 }

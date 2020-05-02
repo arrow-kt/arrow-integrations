@@ -49,7 +49,6 @@ class TaglessCallTest : UnitSpec() {
           .assertValue { it == ResponseMock("hello, world!") }
       }
 
-
   "should be able to parse answer with MonoK" {
     val result = createMonoKApiClientTest(baseUrl())
       .testMonoK()
@@ -80,7 +79,6 @@ class TaglessCallTest : UnitSpec() {
 
       assertEquals(result, Unit)
     }
-
   }
 }
 
