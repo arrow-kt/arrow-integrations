@@ -2,9 +2,10 @@ package arrow.integrations.retrofit.adapter
 
 import arrow.core.Either
 import okhttp3.Headers
+import okhttp3.Response
 
 data class ResponseE<E, A>(
-  val raw: okhttp3.Response,
+  val raw: Response,
   val body: Either<E, A>
 ) {
 
