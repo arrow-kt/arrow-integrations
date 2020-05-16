@@ -42,27 +42,27 @@ internal class ArrowResponseECallAdapter<E, R>(
         override fun onResponse(call: Call<R>, response: Response<R>) {
           if (response.isSuccessful) {
             val body = response.body()
-            if (body == null) {
-              callback.onFailure(this@ResponseECall, IllegalStateException("Null body found!"))
-            } else {
+            if (body != null) {
               val bodyE: Either<E, R> = body.right()
               callback.onResponse(this@ResponseECall, Response.success(response.code(), ResponseE(response.raw(), bodyE)))
+            } else {
+              callback.onFailure(this@ResponseECall, NullBodyException())
             }
           } else {
             val error = response.errorBody()
-            if (error == null) {
-              callback.onFailure(this@ResponseECall, IllegalStateException("Null errorBody found!"))
-            } else {
+            if (error != null) {
               try {
                 val errorBody = errorConverter.convert(response.errorBody()!!)
-                if (errorBody == null) {
-                  callback.onFailure(this@ResponseECall, IllegalStateException("Null errorBody found!"))
-                } else {
+                if (errorBody != null) {
                   callback.onResponse(this@ResponseECall, Response.success<ResponseE<E, R>>(ResponseE(response.raw(), errorBody.left())))
+                } else {
+                  callback.onFailure(this@ResponseECall, NullBodyException())
                 }
               } catch (e: Exception) {
-                callback.onFailure(this@ResponseECall, IllegalStateException("Failed to convert error body!", e))
+                callback.onFailure(this@ResponseECall, FailedToConvertBodyException(e))
               }
+            } else {
+              callback.onFailure(this@ResponseECall, NullBodyException())
             }
           }
         }
