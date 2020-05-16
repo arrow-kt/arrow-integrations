@@ -33,30 +33,28 @@ class ArrowCallAdapterFactory : CallAdapter.Factory() {
 
   private fun eitherAdapter(returnType: ParameterizedType, retrofit: Retrofit): CallAdapter<Type, out Call<out Any>>? {
     val wrapperType = getParameterUpperBound(0, returnType)
-    val rawWrapperType = getRawType(wrapperType)
-    return when (rawWrapperType) {
+    return when (getRawType(wrapperType)) {
       Either::class.java -> {
-        if (wrapperType !is ParameterizedType) {
-          val name = parseTypeName(returnType)
-          throw IllegalArgumentException("Return type must be parameterized as " +
-            "$name<ErrorBody, ResponseBody> or $name<out ErrorBody, out ResponseBody>")
-        }
-        val errorType = getParameterUpperBound(0, wrapperType)
-        val bodyType = getParameterUpperBound(1, wrapperType)
+        val (errorType, bodyType) = extractErrorAndReturnType(wrapperType, returnType)
         ArrowEitherCallAdapter<Any, Type>(retrofit, errorType, bodyType)
       }
       ResponseE::class.java -> {
-        if (wrapperType !is ParameterizedType) {
-          val name = parseTypeName(returnType)
-          throw IllegalArgumentException("Return type must be parameterized as " +
-            "$name<ErrorBody, ResponseBody> or $name<out ErrorBody, out ResponseBody>")
-        }
-        val errorType = getParameterUpperBound(0, wrapperType)
-        val bodyType = getParameterUpperBound(1, wrapperType)
+        val (errorType, bodyType) = extractErrorAndReturnType(wrapperType, returnType)
         ArrowResponseECallAdapter<Any, Type>(retrofit, errorType, bodyType)
       }
       else -> null
     }
+  }
+
+  private inline fun extractErrorAndReturnType(wrapperType: Type, returnType: ParameterizedType): Pair<Type, Type> {
+    if (wrapperType !is ParameterizedType) {
+      val name = parseTypeName(returnType)
+      throw IllegalArgumentException("Return type must be parameterized as " +
+        "$name<ErrorBody, ResponseBody> or $name<out ErrorBody, out ResponseBody>")
+    }
+    val errorType = getParameterUpperBound(0, wrapperType)
+    val bodyType = getParameterUpperBound(1, wrapperType)
+    return Pair(errorType, bodyType)
   }
 }
 
