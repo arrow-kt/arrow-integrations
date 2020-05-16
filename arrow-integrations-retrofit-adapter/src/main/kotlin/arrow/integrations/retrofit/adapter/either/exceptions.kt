@@ -1,4 +1,4 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.either
 
 class NullBodyException : IllegalStateException("Null body found!")
 

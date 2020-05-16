@@ -1,4 +1,4 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.either
 
 import arrow.core.Either
 import arrow.core.left
@@ -14,55 +14,55 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import java.lang.reflect.Type
 
-internal class ArrowResponseECallAdapter<E, R>(
+internal class ArrowEitherCallAdapter<E, R>(
   retrofit: Retrofit,
   errorType: Type,
   private val bodyType: Type
-) : CallAdapter<R, Call<ResponseE<E, R>>> {
+) : CallAdapter<R, Call<Either<E, R>>> {
 
   private val errorConverter: Converter<ResponseBody, E> =
     retrofit.responseBodyConverter(errorType, arrayOfNulls(0))
 
-  override fun adapt(call: Call<R>): Call<ResponseE<E, R>> = ResponseECall(call, errorConverter)
+  override fun adapt(call: Call<R>): Call<Either<E, R>> = EitherCall(call, errorConverter)
 
   override fun responseType(): Type = bodyType
 
-  class ResponseECall<E, R>(
+  class EitherCall<E, R>(
     private val original: Call<R>,
     private val errorConverter: Converter<ResponseBody, E>
-  ) : Call<ResponseE<E, R>> {
+  ) : Call<Either<E, R>> {
 
-    override fun enqueue(callback: Callback<ResponseE<E, R>>) {
+    override fun enqueue(callback: Callback<Either<E, R>>) {
       original.enqueue(object : Callback<R> {
 
         override fun onFailure(call: Call<R>, t: Throwable) {
-          callback.onFailure(this@ResponseECall, t)
+          callback.onFailure(this@EitherCall, t)
         }
 
         override fun onResponse(call: Call<R>, response: Response<R>) {
           if (response.isSuccessful) {
             val body = response.body()
             if (body != null) {
-              val bodyE: Either<E, R> = body.right()
-              callback.onResponse(this@ResponseECall, Response.success(response.code(), ResponseE(response.raw(), bodyE)))
+              val success: Response<Either<E, R>> = Response.success(response.code(), body.right())
+              callback.onResponse(this@EitherCall, success)
             } else {
-              callback.onFailure(this@ResponseECall, NullBodyException())
+              callback.onFailure(this@EitherCall, NullBodyException())
             }
           } else {
-            val error = response.errorBody()
-            if (error != null) {
+            val errorBody = response.errorBody()
+            if (errorBody != null) {
               try {
-                val errorBody = errorConverter.convert(response.errorBody()!!)
-                if (errorBody != null) {
-                  callback.onResponse(this@ResponseECall, Response.success<ResponseE<E, R>>(ResponseE(response.raw(), errorBody.left())))
+                val error = errorConverter.convert(errorBody)
+                if (error != null) {
+                  callback.onResponse(this@EitherCall, Response.success(error.left()))
                 } else {
-                  callback.onFailure(this@ResponseECall, NullBodyException())
+                  callback.onFailure(this@EitherCall, FailedToConvertBodyException())
                 }
               } catch (e: Exception) {
-                callback.onFailure(this@ResponseECall, FailedToConvertBodyException(e))
+                callback.onFailure(this@EitherCall, FailedToConvertBodyException(e))
               }
             } else {
-              callback.onFailure(this@ResponseECall, NullBodyException())
+              callback.onFailure(this@EitherCall, NullBodyException())
             }
           }
         }
@@ -73,14 +73,14 @@ internal class ArrowResponseECallAdapter<E, R>(
 
     override fun timeout(): Timeout = original.timeout()
 
-    override fun clone(): Call<ResponseE<E, R>> = ResponseECall(original.clone(), errorConverter)
+    override fun clone(): Call<Either<E, R>> = EitherCall(original.clone(), errorConverter)
 
     override fun isCanceled(): Boolean = original.isCanceled
 
     override fun cancel() = original.cancel()
 
-    override fun execute(): Response<ResponseE<E, R>> =
-      throw UnsupportedOperationException("We don't do that here!")
+    override fun execute(): Response<Either<E, R>> =
+      throw UnsupportedOperationException("This adapter does not support sync execution")
 
     override fun request(): Request = original.request()
   }

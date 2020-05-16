@@ -11,7 +11,7 @@ import okhttp3.HttpUrl
 private val NO_ANNOTATIONS = emptyArray<Annotation>()
 
 private val retrofit = retrofit(HttpUrl.parse("http://localhost:1")!!)
-private val factory = ArrowCallAdapterFactory.create()
+private val factory = CallKindAdapterFactory.create()
 
 class CallKindAdapterFactoryTest : UnitSpec() {
   init {

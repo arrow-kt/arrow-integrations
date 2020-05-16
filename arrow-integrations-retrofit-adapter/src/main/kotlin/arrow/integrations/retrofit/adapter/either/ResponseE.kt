@@ -1,4 +1,4 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.either
 
 import arrow.core.Either
 import okhttp3.Headers

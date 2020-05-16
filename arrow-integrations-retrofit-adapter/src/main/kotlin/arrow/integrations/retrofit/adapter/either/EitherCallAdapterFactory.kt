@@ -1,4 +1,4 @@
-package arrow.integrations.retrofit.adapter
+package arrow.integrations.retrofit.adapter.either
 
 import arrow.core.Either
 import retrofit2.Call
@@ -7,10 +7,30 @@ import retrofit2.Retrofit
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-class ArrowCallAdapterFactory : CallAdapter.Factory() {
+/**
+ * A [CallAdapter.Factory] which supports suspend + [Either] as the return type
+ *
+ * Adding this to [Retrofit] will enable you to return [Either] from your service methods.
+ *
+ * ```kotlin
+ * interface MyService {
+ *   @GET("/user/me")
+ *   suspend fun user(): Either<ErrorBody, User>
+ *
+ *   @GET("/user/me")
+ *   suspend fun userResponse(): EitherR<ErrorBody, User>
+ * }
+ * ```
+ *
+ * Using [Either] as the return type means that 200 status code and HTTP errors return a value,
+ * other exceptions will throw.
+ *
+ * [ResponseE] is similar to [retrofit2.Response] but uses [Either] for the response body.
+ */
+class EitherCallAdapterFactory : CallAdapter.Factory() {
 
   companion object {
-    fun create(): ArrowCallAdapterFactory = ArrowCallAdapterFactory()
+    fun create(): EitherCallAdapterFactory = EitherCallAdapterFactory()
   }
 
   override fun get(returnType: Type, annotations: Array<Annotation>, retrofit: Retrofit): CallAdapter<*, *>? {
@@ -25,7 +45,6 @@ class ArrowCallAdapterFactory : CallAdapter.Factory() {
     val effectType = getParameterUpperBound(0, returnType)
 
     return when (rawType) {
-      CallK::class.java -> CallKind2CallAdapter<Type>(effectType)
       Call::class.java -> eitherAdapter(returnType, retrofit)
       else -> null
     }
