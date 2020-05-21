@@ -40,31 +40,11 @@ internal class ArrowEitherCallAdapter<E, R>(
         }
 
         override fun onResponse(call: Call<R>, response: Response<R>) {
-          if (response.isSuccessful) {
-            val body = response.body()
-            if (body != null) {
-              val success: Response<Either<E, R>> = Response.success(response.code(), body.right())
-              callback.onResponse(this@EitherCall, success)
-            } else {
-              callback.onFailure(this@EitherCall, NullBodyException())
-            }
-          } else {
-            val errorBody = response.errorBody()
-            if (errorBody != null) {
-              try {
-                val error = errorConverter.convert(errorBody)
-                if (error != null) {
-                  callback.onResponse(this@EitherCall, Response.success(error.left()))
-                } else {
-                  callback.onFailure(this@EitherCall, FailedToConvertBodyException())
-                }
-              } catch (e: Exception) {
-                callback.onFailure(this@EitherCall, FailedToConvertBodyException(e))
-              }
-            } else {
-              callback.onFailure(this@EitherCall, NullBodyException())
-            }
-          }
+          onResponseFn(callback, this@EitherCall, errorConverter, response, { body, _ ->
+            Response.success(response.code(), body.right())
+          }, { errorBody, _ ->
+            Response.success(errorBody.left())
+          })
         }
       })
     }
