@@ -42,8 +42,6 @@ class EitherCallAdapterFactory : CallAdapter.Factory() {
         "$name<Foo> or $name<out Foo>")
     }
 
-    val effectType = getParameterUpperBound(0, returnType)
-
     return when (rawType) {
       Call::class.java -> eitherAdapter(returnType, retrofit)
       else -> null
