@@ -15,7 +15,6 @@ class TaglessAdapterFactory<F>(private val async: Async<F>) : CallAdapter.Factor
 
   companion object {
     fun createIO(): TaglessAdapterFactory<IOPartialOf<Throwable>> = TaglessAdapterFactory(IO.async())
-
     fun <F> create(async: Async<F>): TaglessAdapterFactory<F> = TaglessAdapterFactory(async)
   }
 
@@ -24,8 +23,7 @@ class TaglessAdapterFactory<F>(private val async: Async<F>) : CallAdapter.Factor
 
     if (returnType !is ParameterizedType) {
       val name = parseTypeName(returnType)
-      throw IllegalArgumentException("Return type must be parameterized as " +
-        "$name<Foo> or $name<out Foo>")
+      throw IllegalArgumentException("Return type must be parameterized as $name<Foo> or $name<out Foo>")
     }
 
     return if (Kind::class.java.isAssignableFrom(rawType)) {

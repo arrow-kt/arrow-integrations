@@ -1,12 +1,9 @@
 package arrow.integrations.retrofit.adapter.io
 
 import arrow.Kind
-import arrow.core.Either
-import arrow.core.ForEither
-import arrow.core.extensions.either.applicativeError.applicativeError
-import arrow.core.fix
+import arrow.core.left
+import arrow.core.right
 import arrow.fx.typeclasses.Async
-import arrow.typeclasses.ApplicativeError
 import retrofit2.Call
 import retrofit2.CallAdapter
 import retrofit2.Callback
@@ -15,30 +12,27 @@ import retrofit2.Response
 import java.lang.reflect.Type
 
 class TaglessCallAdapter<F, R>(private val type: Type, private val async: Async<F>) : CallAdapter<R, Kind<F, R>> {
-  override fun adapt(call: Call<R>): Kind<F, R> {
-    val apError: ApplicativeError<Kind<ForEither, Throwable>, Throwable> = Either.applicativeError()
-
-    return async.async { ioProc ->
+  override fun adapt(call: Call<R>): Kind<F, R> =
+    async.async { ioProc ->
       call.enqueue(object : Callback<R> {
         override fun onResponse(call: Call<R>, response: Response<R>) {
           if (response.isSuccessful) {
             val body = response.body()
             if (body != null) {
-              ioProc(apError.just(body).fix())
+              ioProc(body.right())
             } else {
-              ioProc(apError.raiseError<R>(IllegalStateException("The request returned a null body")).fix())
+              ioProc(IllegalStateException("The request returned a null body").left())
             }
           } else {
-            ioProc(apError.raiseError<R>(HttpException(response)).fix())
+            ioProc(HttpException(response).left())
           }
         }
 
-        override fun onFailure(call: Call<R>, t: Throwable) {
-          ioProc(apError.raiseError<R>(t).fix())
+        override fun onFailure(call: Call<R>, throwable: Throwable) {
+          ioProc(throwable.left())
         }
       })
     }
-  }
 
   override fun responseType(): Type = type
 }

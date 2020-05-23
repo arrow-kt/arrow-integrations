@@ -8,8 +8,8 @@ import retrofit2.http.POST
 interface IOApiClientTest {
 
   @GET("test")
-  fun testIO(): IO<Throwable, ResponseMock>
+  fun testIO(): IO<Nothing, ResponseMock>
 
   @POST("testUnitResponsePOST")
-  fun testUnitResponsePost(): IO<Throwable, Unit>
+  fun testUnitResponsePost(): IO<Nothing, Unit>
 }
