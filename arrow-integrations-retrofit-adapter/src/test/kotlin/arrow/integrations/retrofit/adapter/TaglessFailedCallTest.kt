@@ -94,7 +94,7 @@ class TaglessFailedCallTest : UnitSpec() {
   }
 }
 
-private fun <R> assertIsException(result: Either<Nothing, Either<Throwable, R>>) {
+private fun <R> assertIsException(result: Either<*, Either<Throwable, R>>) {
   result.fold({
     fail("The request terminated with an error (IO left value), but should be exception")
   }, {
