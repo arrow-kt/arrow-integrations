@@ -13,19 +13,30 @@ apply from: "$DOC_CONF"
 apply from: "$PUBLISH_CONF"
 
 dependencies {
-    compile "io.arrow-kt:arrow-fx:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-annotations:$VERSION_NAME"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$KOTLIN_VERSION"
-    compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
+    implementation "io.arrow-kt:arrow-fx:$VERSION_NAME"
+    implementation "io.arrow-kt:arrow-annotations:$VERSION_NAME"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$KOTLIN_VERSION"
+    implementation "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
     kapt "io.arrow-kt:arrow-meta:$VERSION_NAME"
     kaptTest "io.arrow-kt:arrow-meta:$VERSION_NAME"
     compileOnly "io.arrow-kt:arrow-meta:$VERSION_NAME"
-    testCompileOnly "io.arrow-kt:arrow-meta:$VERSION_NAME"
-    testCompile "io.arrow-kt:arrow-core-test:$VERSION_NAME"
+
     testRuntime "org.junit.vintage:junit-vintage-engine:$JUNIT_VINTAGE_VERSION"
-    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", excludeArrow
-    testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
-    testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
-    testCompile "io.arrow-kt:arrow-fx-rx2:$VERSION_NAME"
-    testCompile "io.arrow-kt:arrow-fx:$VERSION_NAME"
+    testCompileOnly "io.arrow-kt:arrow-meta:$VERSION_NAME"
+    testImplementation "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
+    testImplementation "io.arrow-kt:arrow-fx-rx2:$VERSION_NAME"
+    testImplementation "io.arrow-kt:arrow-fx:$VERSION_NAME"
+
+    testImplementation "io.arrow-kt:arrow-core-test:$VERSION_NAME"
+    testCompile "io.kotest:kotest-runner-junit5-jvm:$KOTEST_VERSION" // for kotest framework
+    testCompile "io.kotest:kotest-assertions-core-jvm:$KOTEST_VERSION" // for kotest core jvm assertions
+    testCompile "io.kotest:kotest-property-jvm:$KOTEST_VERSION" // for kotest property test
+    testCompile "io.kotest:kotest-runner-console-jvm:$KOTEST_VERSION"
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = JAVA_VERSION
+    }
 }

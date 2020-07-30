@@ -6,7 +6,7 @@ import arrow.fx.extensions.io.async.async
 import arrow.fx.fix
 import arrow.integrations.retrofit.adapter.retrofit.ApiClientTest
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
-import io.kotlintest.fail
+import io.kotest.assertions.fail
 import okhttp3.HttpUrl
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

@@ -1,7 +1,7 @@
 package arrow.integrations.jackson.module
 
-import io.kotlintest.properties.Gen
+import io.kotest.property.Arb
 
 data class SomeObject(val someString: String, val someInt: Int)
 
-fun Gen.Companion.someObject(): Gen<SomeObject> = bind(string(), int()) { str, int -> SomeObject(str, int) }
+fun Arb.Companion.someObject(): Arb<SomeObject> = bind(string(), int()) { str, int -> SomeObject(str, int) }

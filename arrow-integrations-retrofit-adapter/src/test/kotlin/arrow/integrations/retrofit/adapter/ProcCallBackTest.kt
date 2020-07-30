@@ -15,7 +15,7 @@ import arrow.fx.rx2.value
 import arrow.integrations.retrofit.adapter.mock.ResponseMock
 import arrow.integrations.retrofit.adapter.retrofit.ApiClientTest
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
-import io.kotlintest.fail
+import io.kotest.assertions.fail
 import okhttp3.HttpUrl
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

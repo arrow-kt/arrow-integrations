@@ -4,8 +4,8 @@ import arrow.core.test.UnitSpec
 import arrow.fx.IO
 import arrow.integrations.retrofit.adapter.retrofit.retrofit
 import com.google.gson.reflect.TypeToken
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldThrow
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import okhttp3.HttpUrl
 
 private val NO_ANNOTATIONS = emptyArray<Annotation>()
