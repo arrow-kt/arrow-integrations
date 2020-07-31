@@ -12,6 +12,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.property.arbitrary.bool
 import io.kotest.property.arbitrary.choice
 import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 

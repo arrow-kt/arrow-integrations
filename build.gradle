@@ -18,6 +18,6 @@ subprojects {
     apply plugin: 'ru.vyarus.animalsniffer'
     apply plugin: 'java'
     dependencies {
-        signature 'net.sf.androidscents.signature:android-api-level-21:5.0.1_r2@signature'
+        signature 'com.toasttab.android:gummy-bears-api-21:0.1.0'
     }
 }
