@@ -39,5 +39,15 @@ class NonEmptyListModuleTest : UnitSpec() {
         decoded shouldBe list
       }
     }
+
+    "serializing NonEmptyList in an object should round trip" {
+      data class Wrapper(val nel: Nel<SomeObject>)
+      assertAll(Gen.nonEmptyList(Gen.someObject()).map { Wrapper(it) }) { wrapper ->
+        val encoded: String = mapper.writeValueAsString(wrapper)
+        val decoded: Wrapper = mapper.readValue(encoded, Wrapper::class.java)
+
+        decoded shouldBe wrapper
+      }
+    }
   }
 }

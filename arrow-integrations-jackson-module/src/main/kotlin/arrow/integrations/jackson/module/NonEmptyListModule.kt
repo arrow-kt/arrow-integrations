@@ -2,7 +2,6 @@ package arrow.integrations.jackson.module
 
 import arrow.core.NonEmptyList
 import arrow.core.getOrElse
-import arrow.core.toOption
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
 import com.fasterxml.jackson.databind.DeserializationConfig
@@ -21,7 +20,7 @@ object NonEmptyListModule : SimpleModule(PackageVersion.VERSION) {
   init {
     addSerializer(
       NonEmptyList::class.java,
-      StdDelegatingSerializer(NonEmptyListSerializationConverter())
+      StdDelegatingSerializer(NonEmptyListSerializationConverter)
     )
   }
 
@@ -31,7 +30,7 @@ object NonEmptyListModule : SimpleModule(PackageVersion.VERSION) {
   }
 }
 
-class NonEmptyListSerializationConverter : StdConverter<NonEmptyList<*>, List<*>>() {
+object NonEmptyListSerializationConverter : StdConverter<NonEmptyList<*>, List<*>>() {
   override fun convert(value: NonEmptyList<*>?): List<*>? = value?.all.orEmpty()
 }
 
@@ -39,9 +38,7 @@ private class NonEmptyListDeserializationConverter(private val elementType: Java
   StdConverter<List<Any?>, NonEmptyList<Any?>?>() {
 
   override fun convert(value: List<*>?): NonEmptyList<*>? =
-    value.toOption()
-      .map { NonEmptyList.fromList(it).getOrElse { throw IllegalArgumentException("list is empty") } }
-      .orNull()
+    value?.let { NonEmptyList.fromList(it).getOrElse { throw IllegalArgumentException("NonEmptyList cannot be empty") } }
 
   override fun getInputType(typeFactory: TypeFactory): JavaType =
     typeFactory.constructCollectionType(List::class.java, elementType)
