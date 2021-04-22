@@ -4,21 +4,28 @@ plugins {
 }
 
 apply from: "$SUB_PROJECT"
-apply from: "$DOC_CREATION"
-apply from: "$PUBLICATION"
-apply from: "$ANIMALSNIFFER"
 
 dependencies {
-    compile "io.arrow-kt:arrow-fx:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-annotations:$VERSION_NAME"
+    compile "io.arrow-kt:arrow-fx:$ARROW_VERSION"
+    compile "io.arrow-kt:arrow-annotations:$ARROW_VERSION"
     compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
-    compileOnly "io.arrow-kt:arrow-meta:$VERSION_NAME"
-    testCompileOnly "io.arrow-kt:arrow-meta:$VERSION_NAME"
-    testCompile "io.arrow-kt:arrow-core-test:$VERSION_NAME"
+    compileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
+    testCompileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
+    testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
     testRuntime "org.junit.vintage:junit-vintage-engine:$JUNIT_VINTAGE_VERSION"
     testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", excludeArrow
     testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
-    testCompile "io.arrow-kt:arrow-fx-rx2:$VERSION_NAME"
-    testCompile "io.arrow-kt:arrow-fx:$VERSION_NAME"
+    testCompile "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
+    testCompile "io.arrow-kt:arrow-fx:$ARROW_VERSION"
+}
+
+// -- Gradle Animal Sniffer Plugin: https://github.com/xvik/gradle-animalsniffer-plugin
+apply plugin: 'ru.vyarus.animalsniffer'
+apply plugin: 'java'
+animalsniffer {
+    ignore 'java.lang.*'
+}
+dependencies {
+    signature 'net.sf.androidscents.signature:android-api-level-21:5.0.1_r2@signature'
 }

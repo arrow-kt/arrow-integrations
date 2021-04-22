@@ -1,9 +1,9 @@
 buildscript {
     repositories {
-        maven { url "https://oss.jfrog.org/artifactory/oss-snapshot-local/" }
+        mavenCentral()
     }
     dependencies {
-        classpath "io.arrow-kt:arrow-ank-gradle:$VERSION_NAME"
+        classpath "io.arrow-kt:arrow-ank-gradle:$ARROW_VERSION"
     }
 }
 
@@ -14,14 +14,20 @@ plugins {
 }
 
 apply from: "$SUB_PROJECT"
-apply from: "$DOC_VALIDATION"
 
 dependencies {
-    compile "io.arrow-kt:arrow-optics:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-ui:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-fx:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-fx-rx2:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-fx-reactor:$VERSION_NAME"
-    compile "io.arrow-kt:arrow-fx-kotlinx-coroutines:$VERSION_NAME"
-    kapt "io.arrow-kt:arrow-meta:$VERSION_NAME"
+    compileOnly "io.arrow-kt:arrow-optics:$ARROW_VERSION"
+    compileOnly "io.arrow-kt:arrow-ui:$ARROW_VERSION"
+    compileOnly "io.arrow-kt:arrow-fx:$ARROW_VERSION"
+    compileOnly "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
+    compileOnly "io.arrow-kt:arrow-fx-reactor:$ARROW_VERSION"
+    compileOnly "io.arrow-kt:arrow-fx-kotlinx-coroutines:$ARROW_VERSION"
+}
+
+apply plugin: 'ank-gradle-plugin'
+
+ank {
+    source = file("${rootDir}/build/apidocs")
+    target = file("${rootDir}/build/_apidocs")
+    classpath = sourceSets.main.runtimeClasspath
 }
