@@ -3,7 +3,6 @@ package arrow.integrations.jackson.module
 import arrow.core.Nel
 import arrow.core.test.UnitSpec
 import arrow.core.test.generators.nonEmptyList
-import arrow.syntax.function.pipe
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -34,9 +33,10 @@ class NonEmptyListModuleTest : UnitSpec() {
           Gen.nonEmptyList(Gen.bool()).map { it to jacksonTypeRef<Nel<Boolean>>() }
         )
       ) { (list, typeReference) ->
-        val roundTripped = mapper.writeValueAsString(list).pipe { mapper.readValue<Nel<*>>(it, typeReference) }
+        val encoded: String = mapper.writeValueAsString(list)
+        val decoded: Nel<Any> = mapper.readValue(encoded, typeReference)
 
-        roundTripped shouldBe list
+        decoded shouldBe list
       }
     }
   }

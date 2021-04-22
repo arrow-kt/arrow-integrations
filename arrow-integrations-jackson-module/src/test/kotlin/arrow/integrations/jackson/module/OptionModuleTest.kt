@@ -1,9 +1,10 @@
 package arrow.integrations.jackson.module
 
 import arrow.core.Option
+import arrow.core.some
 import arrow.core.test.UnitSpec
 import arrow.core.test.generators.option
-import arrow.syntax.function.pipe
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -25,6 +26,20 @@ class OptionModuleTest : UnitSpec() {
       }
     }
 
+    "serializing Option with Include.NON_ABSENT should honor such configuration and omit serialization when option is empty" {
+      val mapperWithSettings = ObjectMapper().registerModule(OptionModule).registerKotlinModule()
+        .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+
+      data class Wrapper(val option: Option<Any>)
+
+      assertAll(Gen.option(Gen.oneOf(Gen.someObject(), Gen.int(), Gen.string(), Gen.bool()))) { option ->
+        val actual = mapperWithSettings.writeValueAsString(Wrapper(option))
+        val expected = option.fold({ "{}" }, { mapperWithSettings.writeValueAsString(Wrapper(it.some())) })
+
+        actual.shouldMatchJson(expected)
+      }
+    }
+
     "serializing Option and then deserialize it should be the same as before the deserialization" {
       assertAll(
         Gen.oneOf(
@@ -34,9 +49,10 @@ class OptionModuleTest : UnitSpec() {
           Gen.option(Gen.bool()).map { it to jacksonTypeRef<Option<Boolean>>() }
         )
       ) { (option, typeReference) ->
-        val roundTripped = mapper.writeValueAsString(option).pipe { mapper.readValue<Option<*>>(it, typeReference) }
+        val encoded = mapper.writeValueAsString(option)
+        val decoded = mapper.readValue(encoded, typeReference)
 
-        roundTripped shouldBe option
+        decoded shouldBe option
       }
     }
   }
