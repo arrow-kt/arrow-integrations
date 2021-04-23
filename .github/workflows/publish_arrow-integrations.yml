@@ -1,10 +1,9 @@
 name: "Publish libraries"
 
-on: pull_request
-#on:
-#  push:
-#    branches:
-#    - main
+on:
+  push:
+    branches:
+    - main
 
 jobs:
   publish:
@@ -43,10 +42,10 @@ jobs:
     - name: "Update version when release"
       if: env.NEW_RELEASE_VERSION_EXISTS == '1'
       run: perl -pe "s/^VERSION_NAME=.*/VERSION_NAME=$RELEASE_VERSION/g" -i $BASEDIR/gradle.properties
-    #- name: "Publish"
-    #  run: |
-    #    ./gradlew publish
-    #    echo "$(cat $BASEDIR/gradle.properties | grep VERSION_NAME | cut -d'=' -f2) deployed!"
+    - name: "Publish"
+      run: |
+        ./gradlew publish
+        echo "$(cat $BASEDIR/gradle.properties | grep VERSION_NAME | cut -d'=' -f2) deployed!"
     #- name: "Create tag"
     #  if: env.NEW_RELEASE_VERSION_EXISTS == '1'
     #  run: |
