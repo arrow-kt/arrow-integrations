@@ -1,7 +1,7 @@
 package arrow.integrations.jackson.module
 
-import arrow.core.Nel
-import arrow.syntax.function.pipe
+import arrow.core.NonEmptyList
+import arrow.core.getOrElse
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
 import com.fasterxml.jackson.databind.DeserializationConfig
@@ -9,15 +9,19 @@ import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.deser.Deserializers
 import com.fasterxml.jackson.databind.deser.std.StdDelegatingDeserializer
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdDelegatingSerializer
+import com.fasterxml.jackson.databind.type.CollectionType
 import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.databind.util.StdConverter
 
 object NonEmptyListModule : SimpleModule(PackageVersion.VERSION) {
-
   init {
-    addSerializer(Nel::class.java, StdDelegatingSerializer(NelSerializationConverter))
+    addSerializer(
+      NonEmptyList::class.java,
+      StdDelegatingSerializer(NonEmptyListSerializationConverter)
+    )
   }
 
   override fun setupModule(context: SetupContext) {
@@ -26,36 +30,35 @@ object NonEmptyListModule : SimpleModule(PackageVersion.VERSION) {
   }
 }
 
-private object NelSerializationConverter : StdConverter<Nel<*>, List<*>>() {
-  override fun convert(value: Nel<*>?): List<*>? = value?.all.orEmpty()
+object NonEmptyListSerializationConverter : StdConverter<NonEmptyList<*>, List<*>>() {
+  override fun convert(value: NonEmptyList<*>?): List<*>? = value?.all.orEmpty()
 }
 
-private class NelDeserializationConverter(private val elementType: JavaType) : StdConverter<List<Any?>, Nel<Any?>?>() {
+private class NonEmptyListDeserializationConverter(private val elementType: JavaType) :
+  StdConverter<List<Any?>, NonEmptyList<Any?>?>() {
 
-  override fun convert(value: List<*>?): Nel<*>? = value?.pipe { Nel.fromList(it).orNull() }
+  override fun convert(value: List<*>?): NonEmptyList<*>? =
+    value?.let { NonEmptyList.fromList(it).getOrElse { throw IllegalArgumentException("NonEmptyList cannot be empty") } }
 
   override fun getInputType(typeFactory: TypeFactory): JavaType =
     typeFactory.constructCollectionType(List::class.java, elementType)
 
   override fun getOutputType(typeFactory: TypeFactory): JavaType =
-    typeFactory.constructCollectionLikeType(Nel::class.java, elementType)
+    typeFactory.constructCollectionLikeType(NonEmptyList::class.java, elementType)
 }
 
-private object NonEmptyListDeserializerResolver : Deserializers.Base() {
+object NonEmptyListDeserializerResolver : Deserializers.Base() {
 
-  private val NON_EMPTY_LIST = Nel::class.java
-
-  override fun findBeanDeserializer(
-    type: JavaType,
+  override fun findCollectionDeserializer(
+    type: CollectionType,
     config: DeserializationConfig,
-    beanDesc: BeanDescription
-  ): JsonDeserializer<Nel<*>>? {
-    val rawClass = type.rawClass
-
-    return if (!NON_EMPTY_LIST.isAssignableFrom(rawClass)) {
-      null
+    beanDesc: BeanDescription,
+    elementTypeDeserializer: TypeDeserializer?,
+    elementDeserializer: JsonDeserializer<*>?
+  ): JsonDeserializer<NonEmptyList<*>>? =
+    if (NonEmptyList::class.java.isAssignableFrom(type.rawClass)) {
+      StdDelegatingDeserializer<NonEmptyList<*>>(NonEmptyListDeserializationConverter(type.bindings.getBoundType(0)))
     } else {
-      StdDelegatingDeserializer<Nel<*>>(NelDeserializationConverter(type.bindings.getBoundType(0)))
+      null
     }
-  }
 }
