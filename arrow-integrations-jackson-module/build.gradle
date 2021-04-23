@@ -4,6 +4,9 @@ plugins {
 }
 
 apply from: "$SUB_PROJECT"
+// apply from: "$DOC_CREATION"
+apply from: "$PUBLICATION"
+// apply from: "$ANIMALSNIFFER"
 
 dependencies {
     compile "io.arrow-kt:arrow-core-data:$ARROW_VERSION"
@@ -11,6 +14,6 @@ dependencies {
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:$JACKSON_MODULE_KOTLIN_VERSION"
     testRuntime "org.junit.vintage:junit-vintage-engine:$JUNIT_VINTAGE_VERSION"
     testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
-    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", excludeArrow
+    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", { exclude group: "io.arrow-kt" }
     testCompile "io.kotlintest:kotlintest-assertions-json:$KOTLIN_TEST_VERSION"
 }
