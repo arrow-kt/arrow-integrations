@@ -4,6 +4,9 @@ plugins {
 }
 
 apply from: "$SUB_PROJECT"
+// apply from: "$DOC_CREATION"
+apply from: "$PUBLICATION"
+// apply from: "$ANIMALSNIFFER"
 
 dependencies {
     compile "io.arrow-kt:arrow-fx:$ARROW_VERSION"
@@ -13,13 +16,14 @@ dependencies {
     testCompileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
     testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
     testRuntime "org.junit.vintage:junit-vintage-engine:$JUNIT_VINTAGE_VERSION"
-    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", excludeArrow
+    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", { exclude group: "io.arrow-kt" }
     testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
     testCompile "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
     testCompile "io.arrow-kt:arrow-fx:$ARROW_VERSION"
 }
 
+// TODO
 // -- Gradle Animal Sniffer Plugin: https://github.com/xvik/gradle-animalsniffer-plugin
 apply plugin: 'ru.vyarus.animalsniffer'
 apply plugin: 'java'
