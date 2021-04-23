@@ -17,8 +17,6 @@ apply from: "$SUB_PROJECT"
 
 dependencies {
     compileOnly "io.arrow-kt:arrow-optics:$ARROW_VERSION"
-    compileOnly "io.arrow-kt:arrow-ui:$ARROW_VERSION"
-    compileOnly "io.arrow-kt:arrow-fx:$ARROW_VERSION"
     compileOnly "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
     compileOnly "io.arrow-kt:arrow-fx-reactor:$ARROW_VERSION"
     compileOnly "io.arrow-kt:arrow-fx-kotlinx-coroutines:$ARROW_VERSION"
