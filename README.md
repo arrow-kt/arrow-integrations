@@ -8,3 +8,66 @@
 Λrrow Integrations is part of [**Λrrow**](https://arrow-kt.io).
 
 Global properties come from [**arrow**](https://github.com/arrow-kt/arrow) repository.
+
+## Jackson Module
+
+To register support for arrow datatypes, simply call `.registerArrowModule()` on the object mapper as follows:
+
+```kotlin:ank
+import arrow.integrations.jackson.module.registerArrowModule
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+
+val mapper = ObjectMapper()
+    .registerKotlinModule()
+    .registerArrowModule()
+```
+
+currently supported datatypes:
+- `Option<T>`
+- `NonEmptyList<T>` or `Nel<T>`
+
+Example usage:
+
+```kotlin:ank
+import arrow.core.Nel
+import arrow.core.Option
+import arrow.core.nel
+import arrow.core.none
+import arrow.core.some
+import arrow.integrations.jackson.module.registerArrowModule
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+
+val mapper = ObjectMapper()
+    .registerKotlinModule()
+    .registerArrowModule()
+    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // when enabled Option.none() will not be serialized as null
+
+data class Foo(val value: Option<String>)
+data class Bar(val value: Nel<String>)
+
+mapper.writeValueAsString(Foo(none())) 
+// {}
+
+mapper.readValue("{}", Foo::class.java) 
+// Foo(value=Option.None)
+
+mapper.writeValueAsString(Foo("foo".some())) 
+// {"value":"foo"}
+
+mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
+// Foo(value=Option.Some(foo))
+
+mapper.writeValueAsString(Bar("bar".nel())) 
+// {"value":["bar"]}
+
+mapper.readValue("""{"value":["bar"]}""", Bar::class.java) 
+// Bar(value=NonEmptyList([bar]))
+```
+
+
+## Retrofit Adapter
+
+// TODO
