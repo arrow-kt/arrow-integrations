@@ -16,16 +16,23 @@ plugins {
 apply from: "$SUB_PROJECT"
 
 dependencies {
-    compileOnly "io.arrow-kt:arrow-optics:$ARROW_VERSION"
-    compileOnly "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
-    compileOnly "io.arrow-kt:arrow-fx-reactor:$ARROW_VERSION"
-    compileOnly "io.arrow-kt:arrow-fx-kotlinx-coroutines:$ARROW_VERSION"
+    runtimeOnly project(':arrow-integrations-jackson-module')
 }
 
 apply plugin: 'ank-gradle-plugin'
 
 ank {
-    source = file("${rootDir}/build/apidocs")
-    target = file("${rootDir}/build/_apidocs")
+    source = file("${rootDir}/build/documentation")
+    target = file("${rootDir}/build/_documentation")
     classpath = sourceSets.main.runtimeClasspath
+}
+
+task copyREADME(type: Copy) {
+    from "${rootDir}/README.md"
+    into "${rootDir}/build/documentation"
+}
+
+afterEvaluate {
+    runAnk.dependsOn 'copyREADME'
+    runAnk.mustRunAfter 'copyREADME'
 }
