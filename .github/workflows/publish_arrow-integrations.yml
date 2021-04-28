@@ -39,9 +39,11 @@ jobs:
         echo "LATEST_PUBLISHED_VERSION: $LATEST_PUBLISHED_VERSION"
         echo "RELEASE_VERSION: $RELEASE_VERSION"
         echo "NEW_RELEASE_VERSION_EXISTS: $NEW_RELEASE_VERSION_EXISTS"
-    - name: "Update version when release"
+    - name: "Update configuration when release"
       if: env.NEW_RELEASE_VERSION_EXISTS == '1'
-      run: perl -pe "s/^VERSION_NAME=.*/VERSION_NAME=$RELEASE_VERSION/g" -i $BASEDIR/gradle.properties
+      run: |
+        perl -pe "s/^VERSION_NAME=.*/VERSION_NAME=$RELEASE_VERSION/g" -i $BASEDIR/gradle.properties
+        perl -pe "s/^org.gradle.parallel=.*/org.gradle.parallel=false/g" -i $BASEDIR/gradle.properties
     - name: "Publish"
       run: |
         ./gradlew publish
