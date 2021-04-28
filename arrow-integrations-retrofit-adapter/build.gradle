@@ -9,7 +9,7 @@ apply from: "$PUBLICATION"
 // apply from: "$ANIMALSNIFFER"
 
 dependencies {
-    compile "io.arrow-kt:arrow-fx:$ARROW_VERSION"
+    compile "io.arrow-kt:arrow-fx-coroutines:$ARROW_VERSION"
     compile "io.arrow-kt:arrow-annotations:$ARROW_VERSION"
     compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
     compileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
@@ -20,7 +20,7 @@ dependencies {
     testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
     testCompile "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
-    testCompile "io.arrow-kt:arrow-fx:$ARROW_VERSION"
+    testCompile "io.arrow-kt:arrow-fx-coroutines:$ARROW_VERSION"
 }
 
 // TODO
