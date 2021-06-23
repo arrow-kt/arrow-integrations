@@ -9,16 +9,6 @@ Prepare a pull request with these changes:
 VERSION_NAME=0.11.0-SNAPSHOT
 LATEST_VERSION=0.10.5
 ```
-2. Update the rest of versions in `gradle.properties`:
-```
-ARROW_VERSION=
-...
-COMMON_SETUP=
-ROOT_PROJECT=
-SUB_PROJECT=
-PUBLICATION=
-ANIMALSNIFFER=
-```
 
 When merging that pull request, this thing will happen automatically:
 
