@@ -12,6 +12,7 @@ LATEST_VERSION=0.10.5
 2. Update the rest of versions in `gradle.properties`:
 ```
 ARROW_VERSION=
+...
 COMMON_SETUP=
 ROOT_PROJECT=
 SUB_PROJECT=
