@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.type.CollectionType
 import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.databind.util.StdConverter
 
-object NonEmptyListModule : SimpleModule(PackageVersion.VERSION) {
+object NonEmptyListModule : SimpleModule(NonEmptyListModule::class.java.canonicalName, PackageVersion.VERSION) {
   init {
     addSerializer(
       NonEmptyList::class.java,
