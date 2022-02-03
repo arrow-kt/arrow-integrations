@@ -11,8 +11,7 @@ apply from: "$PUBLICATION"
 dependencies {
     compile "io.arrow-kt:arrow-core:$ARROW_VERSION"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:$JACKSON_MODULE_KOTLIN_VERSION"
-    testRuntime "org.junit.vintage:junit-vintage-engine:$JUNIT_VINTAGE_VERSION"
     testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
-    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", { exclude group: "io.arrow-kt" }
-    testCompile "io.kotlintest:kotlintest-assertions-json:$KOTLIN_TEST_VERSION"
+    testImplementation "io.kotest:kotest-property:$KOTEST_VERSION"
+    testImplementation "io.kotest:kotest-runner-junit5:$KOTEST_VERSION"
 }
