@@ -8,16 +8,20 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.kotlintest.properties.Gen
-import io.kotlintest.properties.assertAll
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.arbitrary
+import io.kotest.property.arbitrary.boolean
+import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.string
 
 class OptionModuleTest : UnitSpec() {
   private val mapper = ObjectMapper().registerModule(OptionModule).registerKotlinModule()
 
   init {
     "serializing Option should be the same as serializing a nullable value" {
-      assertAll(Gen.option(Gen.oneOf(Gen.someObject(), Gen.int(), Gen.string(), Gen.bool()))) { option ->
+      checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) { option ->
         val actual = mapper.writeValueAsString(option)
         val expected = mapper.writeValueAsString(option.orNull())
 
@@ -31,7 +35,7 @@ class OptionModuleTest : UnitSpec() {
 
       data class Wrapper(val option: Option<Any>)
 
-      assertAll(Gen.option(Gen.oneOf(Gen.someObject(), Gen.int(), Gen.string(), Gen.bool()))) { option ->
+      checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) { option ->
         val actual = mapperWithSettings.writeValueAsString(Wrapper(option))
         val expected = option.fold({ "{}" }, { mapperWithSettings.writeValueAsString(Wrapper(it.some())) })
 
@@ -40,12 +44,12 @@ class OptionModuleTest : UnitSpec() {
     }
 
     "serializing Option and then deserialize it should be the same as before the deserialization" {
-      assertAll(
-        Gen.oneOf(
-          Gen.option(Gen.someObject()).map { it to jacksonTypeRef<Option<SomeObject>>() },
-          Gen.option(Gen.int()).map { it to jacksonTypeRef<Option<Int>>() },
-          Gen.option(Gen.string()).map { it to jacksonTypeRef<Option<String>>() },
-          Gen.option(Gen.bool()).map { it to jacksonTypeRef<Option<Boolean>>() }
+      checkAll(
+        Arb.choice(
+          arbitrary { Arb.option(Arb.someObject()).bind() to jacksonTypeRef<Option<SomeObject>>() },
+          arbitrary { Arb.option(Arb.int()).bind() to jacksonTypeRef<Option<Int>>() },
+          arbitrary { Arb.option(Arb.string()).bind() to jacksonTypeRef<Option<String>>() },
+          arbitrary { Arb.option(Arb.boolean()).bind() to jacksonTypeRef<Option<Boolean>>() }
         )
       ) { (option, typeReference) ->
         val encoded = mapper.writeValueAsString(option)

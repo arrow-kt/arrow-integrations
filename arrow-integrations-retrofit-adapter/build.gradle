@@ -15,8 +15,6 @@ dependencies {
     compileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
     testCompileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
     testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
-    testRuntime "org.junit.vintage:junit-vintage-engine:$JUNIT_VINTAGE_VERSION"
-    testCompile "io.kotlintest:kotlintest-runner-junit5:$KOTLIN_TEST_VERSION", { exclude group: "io.arrow-kt" }
     testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
     testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
     testCompile "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"

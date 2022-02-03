@@ -5,30 +5,34 @@ import arrow.core.test.UnitSpec
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.kotlintest.properties.Gen
-import io.kotlintest.properties.assertAll
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.arbitrary
+import io.kotest.property.arbitrary.boolean
+import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.string
 
 class NonEmptyListModuleTest : UnitSpec() {
   private val mapper = ObjectMapper().registerModule(NonEmptyListModule).registerKotlinModule()
 
   init {
     "serializing NonEmptyList should be the same as serializing the underlying list" {
-      assertAll(Gen.nonEmptyList(Gen.oneOf(Gen.someObject(), Gen.int(), Gen.string(), Gen.bool()))) { list ->
+      checkAll(Arb.nonEmptyList(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) { list ->
         val actual = mapper.writeValueAsString(list)
         val expected = mapper.writeValueAsString(list.all)
 
-        actual shouldBe (expected)
+        actual shouldBe expected
       }
     }
 
     "serializing NonEmptyList and then deserialize it should be the same as before the deserialization" {
-      assertAll(
-        Gen.oneOf(
-          Gen.nonEmptyList(Gen.someObject()).map { it to jacksonTypeRef<Nel<SomeObject>>() },
-          Gen.nonEmptyList(Gen.int()).map { it to jacksonTypeRef<Nel<Int>>() },
-          Gen.nonEmptyList(Gen.string()).map { it to jacksonTypeRef<Nel<String>>() },
-          Gen.nonEmptyList(Gen.bool()).map { it to jacksonTypeRef<Nel<Boolean>>() }
+      checkAll(
+        Arb.choice(
+          arbitrary { Arb.nonEmptyList(Arb.someObject()).bind() to jacksonTypeRef<Nel<SomeObject>>() },
+          arbitrary { Arb.nonEmptyList(Arb.int()).bind() to jacksonTypeRef<Nel<Int>>() },
+          arbitrary { Arb.nonEmptyList(Arb.string()).bind() to jacksonTypeRef<Nel<String>>() },
+          arbitrary { Arb.nonEmptyList(Arb.boolean()).bind() to jacksonTypeRef<Nel<Boolean>>() }
         )
       ) { (list, typeReference) ->
         val encoded: String = mapper.writeValueAsString(list)
@@ -40,18 +44,12 @@ class NonEmptyListModuleTest : UnitSpec() {
 
     "serializing NonEmptyList in an object should round trip" {
       data class Wrapper(val nel: Nel<SomeObject>)
-      assertAll(Gen.nonEmptyList(Gen.someObject()).map { Wrapper(it) }) { wrapper ->
+      checkAll(arbitrary { Wrapper(Arb.nonEmptyList(Arb.someObject()).bind()) }) { wrapper ->
         val encoded: String = mapper.writeValueAsString(wrapper)
         val decoded: Wrapper = mapper.readValue(encoded, Wrapper::class.java)
 
         decoded shouldBe wrapper
       }
-    }
-  }
-
-  private fun <T> Gen.Companion.nonEmptyList(gen: Gen<T>): Gen<Nel<T>> = gen.flatMap { first ->
-    Gen.list(gen).map { rest ->
-      Nel(first, rest)
     }
   }
 }
