@@ -36,7 +36,7 @@ class OptionModuleTest : UnitSpec() {
         val actual = mapperWithSettings.writeValueAsString(Wrapper(option))
         val expected = option.fold({ "{}" }, { mapperWithSettings.writeValueAsString(Wrapper(it.some())) })
 
-        actual.shouldMatchJson(expected)
+        actual shouldBe expected
       }
     }
 

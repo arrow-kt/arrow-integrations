@@ -6,7 +6,6 @@ import arrow.core.test.generators.nonEmptyList
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.kotlintest.assertions.json.shouldMatchJson
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.assertAll
 import io.kotlintest.shouldBe
@@ -20,7 +19,7 @@ class NonEmptyListModuleTest : UnitSpec() {
         val actual = mapper.writeValueAsString(list)
         val expected = mapper.writeValueAsString(list.all)
 
-        actual.shouldMatchJson(expected)
+        actual shouldBe (expected)
       }
     }
 
