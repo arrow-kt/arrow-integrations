@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.util.AccessPattern
 import com.fasterxml.jackson.databind.util.NameTransformer
 import java.lang.reflect.Type
 
-object OptionModule : SimpleModule(OptionModule::class.java.canonicalName,PackageVersion.VERSION) {
+object OptionModule : SimpleModule(OptionModule::class.java.canonicalName, PackageVersion.VERSION) {
 
   init {
     addDeserializer(Option::class.java, OptionDeserializer())
