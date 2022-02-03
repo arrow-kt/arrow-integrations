@@ -22,7 +22,7 @@ class OptionModuleTest : UnitSpec() {
         val actual = mapper.writeValueAsString(option)
         val expected = mapper.writeValueAsString(option.orNull())
 
-        actual.shouldMatchJson(expected)
+        actual shouldBe expected
       }
     }
 
