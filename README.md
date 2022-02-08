@@ -26,14 +26,17 @@ val mapper = ObjectMapper()
 currently supported datatypes:
 - `Option<T>`
 - `NonEmptyList<T>` or `Nel<T>`
+- `Either<L, R>`
 
 Example usage:
 
 ```kotlin:ank
+import arrow.core.Either
 import arrow.core.Nel
 import arrow.core.Option
 import arrow.core.nel
 import arrow.core.none
+import arrow.core.right
 import arrow.core.some
 import arrow.integrations.jackson.module.registerArrowModule
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -47,6 +50,7 @@ val mapper = ObjectMapper()
 
 data class Foo(val value: Option<String>)
 data class Bar(val value: Nel<String>)
+data class Baz(val value: Either<Int, String>)
 
 mapper.writeValueAsString(Foo(none())) 
 // {}
@@ -57,6 +61,9 @@ mapper.readValue("{}", Foo::class.java)
 mapper.writeValueAsString(Foo("foo".some())) 
 // {"value":"foo"}
 
+mapper.writeValueAsString(Baz("hello".right()))
+// {"value":{"right":"hello"}}
+
 mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
 // Foo(value=Option.Some(foo))
 
@@ -65,6 +72,9 @@ mapper.writeValueAsString(Bar("bar".nel()))
 
 mapper.readValue("""{"value":["bar"]}""", Bar::class.java) 
 // Bar(value=NonEmptyList([bar]))
+
+mapper.readValue("""{"value":{"left":5}}""", Baz::class.java)
+// Baz(value=Either.Left(5))
 ```
 
 
