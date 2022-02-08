@@ -38,14 +38,15 @@ class EitherModule(
   }
 }
 
-
 class EitherSerializerResolver(
   leftFieldName: String,
   rightFieldName: String
 ) : Serializers.Base() {
   private val serializer = EitherSerializer(leftFieldName, rightFieldName)
   override fun findSerializer(
-    config: SerializationConfig, javaType: JavaType, beanDesc: BeanDescription?
+    config: SerializationConfig,
+    javaType: JavaType,
+    beanDesc: BeanDescription?
   ): JsonSerializer<*>? = when {
     Either::class.java.isAssignableFrom(javaType.rawClass) -> serializer
     else -> null
