@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.kotest.matchers.shouldBe
 
-
 inline fun <reified T> T.shouldRoundTrip(mapper: ObjectMapper) {
   val encoded = mapper.writeValueAsString(this)
   val decoded = mapper.readValue(encoded, jacksonTypeRef<T>())
