@@ -17,13 +17,10 @@ import com.fasterxml.jackson.databind.DeserializationConfig
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationConfig
 import com.fasterxml.jackson.databind.deser.Deserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.Serializers
-import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 class IorModule(
   private val leftFieldName: String,
@@ -84,18 +81,4 @@ class IorDeserializerResolver(
   private fun Semigroup.Companion.anyNonNull(): Semigroup<Any?> = object : Semigroup<Any?> {
     override fun Any?.combine(b: Any?): Any? = b ?: this
   }
-}
-
-fun main() {
-  val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
-
-  data class Foo(val value: Ior<String?, Int>)
-
-  val res = mapper.writeValueAsString(Foo(Ior.Both("hello", 10)))
-
-  println(res)
-
-  val foo = mapper.readValue(res, jacksonTypeRef<Foo>())
-
-  println(foo)
 }
