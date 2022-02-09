@@ -33,7 +33,7 @@ class UnionTypeDeserializer<T>(
     fun deserializeValue(token: JsonToken, elementDeserializer: ElementDeserializer): Any? = when (token) {
       JsonToken.VALUE_NULL -> null
       else -> elementDeserializer.deserializer.fold(
-        { ctxt.handleUnexpectedToken(javaType.rawClass, parser) }, // no deserializer was found for given type
+        { ctxt.handleUnexpectedToken(javaType.rawClass, token, parser, "no deserializer was found for given type") },
         { deserializer ->
           elementDeserializer.typeDeserializer.fold(
             { deserializer.deserialize(parser, ctxt) }, // only deserializer found
