@@ -1,11 +1,11 @@
 package arrow.integrations.jackson.module
 
-import arrow.core.Either
 import arrow.core.Option
-import arrow.core.left
-import arrow.core.right
-import arrow.core.test.generators.either
+import arrow.core.Validated
+import arrow.core.invalid
 import arrow.core.test.generators.option
+import arrow.core.test.generators.validated
+import arrow.core.valid
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -24,31 +24,31 @@ import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 
-class EitherModuleTest : FunSpec() {
+class ValidatedModuleTest : FunSpec() {
   init {
-    context("either serialization/deserialization") {
-      test("should round-trip on mandatory types") {
+    context("json serialization / deserialization") {
+      test("should round-trip") {
         checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
       }
 
-      test("should serialize in the expected format") {
-        checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
-      }
-
       test("should round-trip nullable types") {
-        checkAll(Arb.either(arbFoo.orNull(), arbBar.orNull())) { either: Either<Foo?, Bar?> ->
-          either.shouldRoundTrip(mapper)
+        checkAll(Arb.validated(arbFoo.orNull(), arbBar.orNull())) { validated: Validated<Foo?, Bar?> ->
+          validated.shouldRoundTrip(mapper)
         }
       }
 
-      test("should round-trip nested either types") {
+      test("should round-trip other way") {
+        checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
+      }
+
+      test("should round-trip nested validated types") {
         checkAll(
-          Arb.either(
-            Arb.either(arbFoo, Arb.int()).orNull(),
-            Arb.either(Arb.string(), arbBar.orNull())
+          Arb.validated(
+            Arb.int(),
+            Arb.validated(Arb.int(), Arb.string()).orNull()
           )
-        ) { either: Either<Either<Foo, Int>?, Either<String, Bar?>> ->
-          either.shouldRoundTrip(mapper)
+        ) { validated: Validated<Int, Validated<Int, String>?> ->
+          validated.shouldRoundTrip(mapper)
         }
       }
 
@@ -58,13 +58,13 @@ class EitherModuleTest : FunSpec() {
             Arb.string(10, Codepoint.az()),
             Arb.string(10, Codepoint.az())
           ).filter { it.first != it.second }
-        ) { (leftFieldName, rightFieldName) ->
-          val mapper = ObjectMapper()
-            .registerKotlinModule()
-            .registerArrowModule(EitherModuleConfig(leftFieldName, rightFieldName))
+        ) { (invalidFieldName, validFieldName) ->
+          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule(
+            validatedModuleConfig = ValidatedModuleConfig(invalidFieldName, validFieldName)
+          )
 
-          mapper.writeValueAsString(5.left()) shouldBe """{"$leftFieldName":5}"""
-          mapper.writeValueAsString("hello".right()) shouldBe """{"$rightFieldName":"hello"}"""
+          mapper.writeValueAsString(5.invalid()) shouldBe """{"$invalidFieldName":5}"""
+          mapper.writeValueAsString("hello".valid()) shouldBe """{"$validFieldName":"hello"}"""
         }
       }
 
@@ -72,13 +72,13 @@ class EitherModuleTest : FunSpec() {
         checkAll(
           Arb.pair(
             Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az()),
+            Arb.string(10, Codepoint.az())
           ).filter { it.first != it.second },
           arbTestClass
-        ) { (leftFieldName, rightFieldName), testClass ->
-          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule(
-            eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
-          )
+        ) { (invalidFieldName, validFieldName), testClass ->
+          val mapper = ObjectMapper()
+            .registerKotlinModule()
+            .registerArrowModule(EitherModuleConfig(invalidFieldName, validFieldName))
 
           testClass.shouldRoundTrip(mapper)
         }
@@ -91,8 +91,8 @@ class EitherModuleTest : FunSpec() {
       val foo = arbFoo.bind()
       """
         {
-          "either": {
-            "left": {
+          "validated": {
+            "invalid": {
               "foo": ${foo.fooValue.orNull()},
               "otherValue": ${mapper.writeValueAsString(foo.otherValue)}
             }
@@ -103,8 +103,8 @@ class EitherModuleTest : FunSpec() {
       val bar = arbBar.bind()
       """
         {
-          "either": {
-            "right": {
+          "validated": {
+            "valid": {
               "first": ${bar.first},
               "second": "${bar.second}",
               "third": ${bar.third}
@@ -117,7 +117,7 @@ class EitherModuleTest : FunSpec() {
 
   private data class Foo(@get:JsonProperty("foo") val fooValue: Option<Int>, val otherValue: String)
   private data class Bar(val first: Int, val second: String, val third: Boolean)
-  private data class TestClass(val either: Either<Foo, Bar>)
+  private data class TestClass(val validated: Validated<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {
     Foo(
@@ -135,7 +135,7 @@ class EitherModuleTest : FunSpec() {
   }
 
   private val arbTestClass: Arb<TestClass> = arbitrary {
-    TestClass(Arb.either(arbFoo, arbBar).bind())
+    TestClass(Arb.validated(arbFoo, arbBar).bind())
   }
 
   private val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()

@@ -1,12 +1,13 @@
 package arrow.integrations.jackson.module
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import arrow.core.Validated
+import arrow.core.invalid
+import arrow.core.orNone
+import arrow.core.valid
 import arrow.integrations.jackson.module.common.InjectField
 import arrow.integrations.jackson.module.common.ProjectField
-import arrow.integrations.jackson.module.common.UnionTypeSerializer
 import arrow.integrations.jackson.module.common.UnionTypeDeserializer
+import arrow.integrations.jackson.module.common.UnionTypeSerializer
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
 import com.fasterxml.jackson.databind.DeserializationConfig
@@ -18,50 +19,50 @@ import com.fasterxml.jackson.databind.deser.Deserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.Serializers
 
-class EitherModule(
-  private val leftFieldName: String,
-  private val rightFieldName: String
-) : SimpleModule(EitherModule::class.java.canonicalName, PackageVersion.VERSION) {
+class ValidatedModule(
+  private val invalidFieldName: String,
+  private val validFieldName: String
+) : SimpleModule(ValidatedModule::class.java.canonicalName, PackageVersion.VERSION) {
   override fun setupModule(context: SetupContext) {
     super.setupModule(context)
-    context.addDeserializers(EitherDeserializerResolver(leftFieldName, rightFieldName))
-    context.addSerializers(EitherSerializerResolver(leftFieldName, rightFieldName))
+    context.addDeserializers(ValidatedDeserializerResolver(invalidFieldName, validFieldName))
+    context.addSerializers(ValidatedSerializerResolver(invalidFieldName, validFieldName))
   }
 }
 
-class EitherSerializerResolver(leftFieldName: String, rightFieldName: String) : Serializers.Base() {
+class ValidatedSerializerResolver(invalidFieldName: String, validFieldName: String) : Serializers.Base() {
   private val serializer = UnionTypeSerializer(
-    Either::class.java,
+    Validated::class.java,
     listOf(
-      ProjectField(leftFieldName) { either -> either.swap().orNone() },
-      ProjectField(rightFieldName) { either -> either.orNone() }
-    ),
+      ProjectField(invalidFieldName) { validated -> validated.swap().orNone() },
+      ProjectField(validFieldName) { validated -> validated.orNone() },
+    )
   )
 
   override fun findSerializer(
     config: SerializationConfig,
-    javaType: JavaType,
+    type: JavaType,
     beanDesc: BeanDescription?
   ): JsonSerializer<*>? = when {
-    Either::class.java.isAssignableFrom(javaType.rawClass) -> serializer
+    Validated::class.java.isAssignableFrom(type.rawClass) -> serializer
     else -> null
   }
 }
 
-class EitherDeserializerResolver(
-  private val leftFieldName: String,
-  private val rightFieldName: String
+class ValidatedDeserializerResolver(
+  private val invalidFieldName: String,
+  private val validFieldName: String
 ) : Deserializers.Base() {
   override fun findBeanDeserializer(
     type: JavaType,
     config: DeserializationConfig,
     beanDesc: BeanDescription?
   ): JsonDeserializer<*>? = when {
-    Either::class.java.isAssignableFrom(type.rawClass) -> UnionTypeDeserializer(
-      Either::class.java,
+    Validated::class.java.isAssignableFrom(type.rawClass) -> UnionTypeDeserializer(
+      Validated::class.java,
       listOf(
-        InjectField(leftFieldName) { leftValue -> leftValue.left() },
-        InjectField(rightFieldName) { rightValue -> rightValue.right() }
+        InjectField(invalidFieldName) { invalidValue -> invalidValue.invalid() },
+        InjectField(validFieldName) { validValue -> validValue.valid() },
       )
     )
     else -> null

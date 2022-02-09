@@ -27,17 +27,21 @@ currently supported datatypes:
 - `Option<T>`
 - `NonEmptyList<T>` or `Nel<T>`
 - `Either<L, R>`
+- `Validated<E, A>`
 
-Example usage:
+### Example usage
 
 ```kotlin:ank
 import arrow.core.Either
 import arrow.core.Nel
 import arrow.core.Option
+import arrow.core.Validated
+import arrow.core.valid
 import arrow.core.nel
 import arrow.core.none
 import arrow.core.right
 import arrow.core.some
+import arrow.core.valid
 import arrow.integrations.jackson.module.registerArrowModule
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -51,6 +55,7 @@ val mapper = ObjectMapper()
 data class Foo(val value: Option<String>)
 data class Bar(val value: Nel<String>)
 data class Baz(val value: Either<Int, String>)
+data class Validation(val value: Validated<Int, String>)
 
 mapper.writeValueAsString(Foo(none())) 
 // {}
@@ -64,6 +69,9 @@ mapper.writeValueAsString(Foo("foo".some()))
 mapper.writeValueAsString(Baz("hello".right()))
 // {"value":{"right":"hello"}}
 
+mapper.writeValueAsString(Validation("hello".valid()))
+// {"value":{"valid":"hello"}}
+
 mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
 // Foo(value=Option.Some(foo))
 
@@ -75,6 +83,9 @@ mapper.readValue("""{"value":["bar"]}""", Bar::class.java)
 
 mapper.readValue("""{"value":{"left":5}}""", Baz::class.java)
 // Baz(value=Either.Left(5))
+
+mapper.readValue("""{"value":{"invalid":5}}""", Validation::class.java)
+// Baz(value=Validated.Invalid(5))
 ```
 
 
