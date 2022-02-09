@@ -2,7 +2,6 @@ package arrow.integrations.jackson.module
 
 import arrow.core.Validated
 import arrow.core.invalid
-import arrow.core.nonEmptyListOf
 import arrow.core.orNone
 import arrow.core.valid
 import arrow.integrations.jackson.module.internal.InjectField
@@ -62,7 +61,7 @@ class ValidatedDeserializerResolver(
     Validated::class.java.isAssignableFrom(type.rawClass) -> UnionTypeDeserializer(
       Validated::class.java,
       type,
-      nonEmptyListOf(
+      listOf(
         InjectField(invalidFieldName) { invalidValue -> invalidValue.invalid() },
         InjectField(validFieldName) { validValue -> validValue.valid() },
       )
