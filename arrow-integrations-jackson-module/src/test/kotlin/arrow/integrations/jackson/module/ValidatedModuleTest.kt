@@ -52,7 +52,7 @@ class ValidatedModuleTest : FunSpec() {
         }
       }
 
-      test("should serialize with configurable left / right field name") {
+      test("should serialize with configurable invalid / valid field name") {
         checkAll(
           Arb.pair(
             Arb.string(10, Codepoint.az()),
@@ -68,7 +68,7 @@ class ValidatedModuleTest : FunSpec() {
         }
       }
 
-      test("should round-trip with configurable left / right field name") {
+      test("should round-trip with configurable invalid / valid field name") {
         checkAll(
           Arb.pair(
             Arb.string(10, Codepoint.az()),
