@@ -65,9 +65,6 @@ data class IorValue(val value: Ior<Int, String>)
 mapper.writeValueAsString(Foo(none())) 
 // {}
 
-mapper.readValue("{}", Foo::class.java) 
-// Foo(value=Option.None)
-
 mapper.writeValueAsString(Foo("foo".some())) 
 // {"value":"foo"}
 
@@ -80,10 +77,13 @@ mapper.writeValueAsString(Baz("hello".right()))
 mapper.writeValueAsString(Validation("hello".valid()))
 // {"value":{"valid":"hello"}}
 
-// deserialization
-
 mapper.writeValueAsString(IorValue((1 to "hello").bothIor()))
 // {"value":{"left":1,"right":"hello"}}
+
+// deserialization
+
+mapper.readValue("{}", Foo::class.java) 
+// Foo(value=Option.None)
 
 mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
 // Foo(value=Option.Some(foo))
