@@ -2,12 +2,13 @@ package arrow.integrations.jackson.module
 
 import arrow.core.Validated
 import arrow.core.invalid
+import arrow.core.nonEmptyListOf
 import arrow.core.orNone
 import arrow.core.valid
-import arrow.integrations.jackson.module.common.InjectField
-import arrow.integrations.jackson.module.common.ProjectField
-import arrow.integrations.jackson.module.common.UnionTypeDeserializer
-import arrow.integrations.jackson.module.common.UnionTypeSerializer
+import arrow.integrations.jackson.module.internal.InjectField
+import arrow.integrations.jackson.module.internal.ProjectField
+import arrow.integrations.jackson.module.internal.UnionTypeDeserializer
+import arrow.integrations.jackson.module.internal.UnionTypeSerializer
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
 import com.fasterxml.jackson.databind.DeserializationConfig
@@ -60,7 +61,8 @@ class ValidatedDeserializerResolver(
   ): JsonDeserializer<*>? = when {
     Validated::class.java.isAssignableFrom(type.rawClass) -> UnionTypeDeserializer(
       Validated::class.java,
-      listOf(
+      type,
+      nonEmptyListOf(
         InjectField(invalidFieldName) { invalidValue -> invalidValue.invalid() },
         InjectField(validFieldName) { validValue -> validValue.valid() },
       )

@@ -3,10 +3,10 @@ package arrow.integrations.jackson.module
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import arrow.integrations.jackson.module.common.InjectField
-import arrow.integrations.jackson.module.common.ProjectField
-import arrow.integrations.jackson.module.common.UnionTypeSerializer
-import arrow.integrations.jackson.module.common.UnionTypeDeserializer
+import arrow.integrations.jackson.module.internal.InjectField
+import arrow.integrations.jackson.module.internal.ProjectField
+import arrow.integrations.jackson.module.internal.UnionTypeSerializer
+import arrow.integrations.jackson.module.internal.UnionTypeDeserializer
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
 import com.fasterxml.jackson.databind.DeserializationConfig
@@ -59,6 +59,7 @@ class EitherDeserializerResolver(
   ): JsonDeserializer<*>? = when {
     Either::class.java.isAssignableFrom(type.rawClass) -> UnionTypeDeserializer(
       Either::class.java,
+      type,
       listOf(
         InjectField(leftFieldName) { leftValue -> leftValue.left() },
         InjectField(rightFieldName) { rightValue -> rightValue.right() }

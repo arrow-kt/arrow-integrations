@@ -1,0 +1,101 @@
+package arrow.integrations.jackson.module
+
+import arrow.core.Ior
+import arrow.core.combine
+import arrow.core.leftIor
+import arrow.core.none
+import arrow.core.rightIor
+import arrow.core.some
+import arrow.integrations.jackson.module.internal.InjectField
+import arrow.integrations.jackson.module.internal.ProductTypeDeserializer
+import arrow.integrations.jackson.module.internal.ProductTypeSerializer
+import arrow.integrations.jackson.module.internal.ProjectField
+import arrow.typeclasses.Semigroup
+import com.fasterxml.jackson.core.json.PackageVersion
+import com.fasterxml.jackson.databind.BeanDescription
+import com.fasterxml.jackson.databind.DeserializationConfig
+import com.fasterxml.jackson.databind.JavaType
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationConfig
+import com.fasterxml.jackson.databind.deser.Deserializers
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.Serializers
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+
+class IorModule(
+  private val leftFieldName: String,
+  private val rightFieldName: String
+) : SimpleModule(IorModule::class.java.canonicalName, PackageVersion.VERSION) {
+  override fun setupModule(context: SetupContext) {
+    super.setupModule(context)
+    context.addDeserializers(IorDeserializerResolver(leftFieldName, rightFieldName))
+    context.addSerializers(IorSerializerResolver(leftFieldName, rightFieldName))
+  }
+}
+
+class IorSerializerResolver(leftFieldName: String, rightFieldName: String) : Serializers.Base() {
+  private val serializer = ProductTypeSerializer(
+    Ior::class.java,
+    listOf(
+      ProjectField(leftFieldName) { ior -> ior.fold({ it.some() }, { none() }, { l, _ -> l.some() }) },
+      ProjectField(rightFieldName) { ior -> ior.fold({ none() }, { it.some() }, { _, r -> r.some() }) },
+    )
+  )
+
+  override fun findSerializer(
+    config: SerializationConfig,
+    type: JavaType,
+    beanDesc: BeanDescription?
+  ): JsonSerializer<*>? = when {
+    Ior::class.java.isAssignableFrom(type.rawClass) -> serializer
+    else -> null
+  }
+}
+
+class IorDeserializerResolver(
+  private val leftFieldName: String,
+  private val rightFieldName: String
+) : Deserializers.Base() {
+
+  override fun findBeanDeserializer(
+    javaType: JavaType,
+    config: DeserializationConfig,
+    beanDesc: BeanDescription?
+  ): JsonDeserializer<*>? = when {
+    Ior::class.java.isAssignableFrom(javaType.rawClass) -> ProductTypeDeserializer(
+      Ior::class.java,
+      javaType,
+      listOf(
+        InjectField(leftFieldName) { firstValue -> firstValue.leftIor() },
+        InjectField(rightFieldName) { secondValue -> secondValue.rightIor() },
+      )
+    ) { iors ->
+      // this reduce is safe because an Ior will always have either a left or a right
+      iors.reduce { first, second ->
+        first.combine(Semigroup.anyNonNull(), Semigroup.anyNonNull(), second)
+      }
+    }
+    else -> null
+  }
+
+  private fun Semigroup.Companion.anyNonNull(): Semigroup<Any?> = object : Semigroup<Any?> {
+    override fun Any?.combine(b: Any?): Any? = b ?: this
+  }
+}
+
+fun main() {
+  val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
+
+  data class Foo(val value: Ior<String?, Int>)
+
+  val res = mapper.writeValueAsString(Foo(Ior.Both("hello", 10)))
+
+  println(res)
+
+  val foo = mapper.readValue(res, jacksonTypeRef<Foo>())
+
+  println(foo)
+}

@@ -3,22 +3,17 @@ package arrow.integrations.jackson.module
 import com.fasterxml.jackson.databind.ObjectMapper
 
 fun ObjectMapper.registerArrowModule(
-  eitherModuleConfig: EitherModuleConfig = EitherModuleConfig.default(),
-  validatedModuleConfig: ValidatedModuleConfig = ValidatedModuleConfig.default()
+  eitherModuleConfig: EitherModuleConfig = EitherModuleConfig("left", "right"),
+  validatedModuleConfig: ValidatedModuleConfig = ValidatedModuleConfig("invalid", "valid"),
+  iorModuleConfig: IorModuleConfig = IorModuleConfig("left", "right")
 ): ObjectMapper = registerModules(
   NonEmptyListModule,
   OptionModule,
   EitherModule(eitherModuleConfig.leftFieldName, eitherModuleConfig.rightFieldName),
-  ValidatedModule(validatedModuleConfig.invalidFieldName, validatedModuleConfig.validFieldName)
+  ValidatedModule(validatedModuleConfig.invalidFieldName, validatedModuleConfig.validFieldName),
+  IorModule(iorModuleConfig.leftFieldName, iorModuleConfig.rightFieldName)
 )
 
-data class EitherModuleConfig(val leftFieldName: String, val rightFieldName: String) {
-  companion object {
-    fun default(): EitherModuleConfig = EitherModuleConfig("left", "right")
-  }
-}
-data class ValidatedModuleConfig(val invalidFieldName: String, val validFieldName: String) {
-  companion object {
-    fun default(): ValidatedModuleConfig = ValidatedModuleConfig("invalid", "valid")
-  }
-}
+data class EitherModuleConfig(val leftFieldName: String, val rightFieldName: String)
+data class ValidatedModuleConfig(val invalidFieldName: String, val validFieldName: String)
+data class IorModuleConfig(val leftFieldName: String, val rightFieldName: String)

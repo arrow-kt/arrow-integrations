@@ -28,15 +28,17 @@ currently supported datatypes:
 - `NonEmptyList<T>` or `Nel<T>`
 - `Either<L, R>`
 - `Validated<E, A>`
+- `Ior<L, R>`
 
 ### Example usage
 
 ```kotlin:ank
 import arrow.core.Either
+import arrow.core.Ior
 import arrow.core.Nel
 import arrow.core.Option
 import arrow.core.Validated
-import arrow.core.valid
+import arrow.core.bothIor
 import arrow.core.nel
 import arrow.core.none
 import arrow.core.right
@@ -56,6 +58,9 @@ data class Foo(val value: Option<String>)
 data class Bar(val value: Nel<String>)
 data class Baz(val value: Either<Int, String>)
 data class Validation(val value: Validated<Int, String>)
+data class IorValue(val value: Ior<Int, String>)
+
+// serialization
 
 mapper.writeValueAsString(Foo(none())) 
 // {}
@@ -66,17 +71,22 @@ mapper.readValue("{}", Foo::class.java)
 mapper.writeValueAsString(Foo("foo".some())) 
 // {"value":"foo"}
 
+mapper.writeValueAsString(Bar("bar".nel())) 
+// {"value":["bar"]}
+
 mapper.writeValueAsString(Baz("hello".right()))
 // {"value":{"right":"hello"}}
 
 mapper.writeValueAsString(Validation("hello".valid()))
 // {"value":{"valid":"hello"}}
 
+// deserialization
+
+mapper.writeValueAsString(IorValue((1 to "hello").bothIor()))
+// {"value":{"left":1,"right":"hello"}}
+
 mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
 // Foo(value=Option.Some(foo))
-
-mapper.writeValueAsString(Bar("bar".nel())) 
-// {"value":["bar"]}
 
 mapper.readValue("""{"value":["bar"]}""", Bar::class.java) 
 // Bar(value=NonEmptyList([bar]))
@@ -86,6 +96,9 @@ mapper.readValue("""{"value":{"left":5}}""", Baz::class.java)
 
 mapper.readValue("""{"value":{"invalid":5}}""", Validation::class.java)
 // Baz(value=Validated.Invalid(5))
+
+mapper.readValue("""{"value":{"left":5}}""", IorValue::class.java)
+// IorValue(value=Ior.Left(5))
 ```
 
 
