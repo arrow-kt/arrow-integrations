@@ -54,14 +54,34 @@ val arrowUser = ArrowUser(
 )
 
 mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
-// {
-//   "name" : "John Doe",
-//   "emails" : [ "john@email.com", "john.doe@email.com.au" ],
-//   "organization" : {
-//     "name" : "arrow-kt",
-//     "websiteUrl" : "https://arrow-kt.io"
-//   }
-// }
+```
+which serializes as follows.
+```json
+{
+  "name" : "John Doe",
+  "emails" : [ "john@email.com", "john.doe@email.com.au" ],
+  "organization" : {
+    "name" : "arrow-kt",
+    "websiteUrl" : "https://arrow-kt.io"
+  }
+}
+```
+Notice that the `Option<T>` serializer
+is configurable via Jackson's serialization inclusion setting. In this example we have configured the serializer
+to not serialize `none()` as null, but instead omit it completely.
+
+Additional configurations that are possible with the arrow module which includes 
+configuring the field names used for serializing / deserializing `Either`, `Validated` or `Ior`. 
+This can be done within the registration step:
+
+```kotlin
+val mapper: ObjectMapper = ObjectMapper()
+  .registerModule(KotlinModule(singletonSupport = SingletonSupport.CANONICALIZE))
+  .registerArrowModule(
+    eitherModuleConfig = EitherModuleConfig("left", "right"),
+    validatedModuleConfig = ValidatedModuleConfig("invalid", "valid"),
+    iorModuleConfig = IorModuleConfig("left", "right")
+  )
 ```
 
 More example usages can be found in [ExampleTest.kt](arrow-integrations-jackson-module/src/test/kotlin/arrow/integrations/jackson/module/ExampleTest.kt)

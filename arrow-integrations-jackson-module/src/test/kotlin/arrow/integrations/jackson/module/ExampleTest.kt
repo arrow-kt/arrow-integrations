@@ -72,10 +72,10 @@ class ExampleTest : FunSpec({
   test("example #3: either") {
     data class Fruit(@get:JsonValue val name: String)
 
-    val apricot = Fruit("starfruit")
+    val apricot = Fruit("apricot")
     prettyPrinter.writeValueAsString(apricot.right()) shouldBe """
       {
-        "right" : "starfruit"
+        "right" : "apricot"
       }
     """.trimIndent()
   }
@@ -90,6 +90,29 @@ class ExampleTest : FunSpec({
       {
         "left" : "starfruit",
         "right" : {
+          "name" : "spinach",
+          "kind" : "leafy greens"
+        }
+      }
+    """.trimIndent()
+  }
+
+  test("example #5: customizing field names") {
+    data class Fruit(@get:JsonValue val name: String)
+    data class Vegetable(val name: String, val kind: String)
+
+    val mapper = ObjectMapper()
+      .registerKotlinModule()
+      .registerArrowModule(
+        iorModuleConfig = IorModuleConfig("l", "r")
+      )
+
+    val starfruit = Fruit("starfruit")
+    val spinach = Vegetable("spinach", "leafy greens")
+    mapper.writerWithDefaultPrettyPrinter().writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe """
+      {
+        "l" : "starfruit",
+        "r" : {
           "name" : "spinach",
           "kind" : "leafy greens"
         }
