@@ -32,7 +32,10 @@ currently supported datatypes:
 
 ### Example usage
 
-Serialization and deserialization of data classes with arrow data types are supported.
+Serialization and deserialization of data classes that incorporate arrow data types can be
+done as follows. In real world scenarios Jackson can be installed as the json serialization/deserialization
+engine. These serializations / deserializations are normally done 
+automatically.
 
 ```kotlin
 val mapper = ObjectMapper()
@@ -43,15 +46,16 @@ val mapper = ObjectMapper()
 data class Organization(val name: String, val address: Option<String>, val websiteUrl: Option<URI>)
 data class ArrowUser(val name: String, val emails: NonEmptyList<String>, val organization: Option<Organization>)
 
-val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
 val arrowUser = ArrowUser(
   "John Doe",
-  nonEmptyListOf("john@email.com", "john.doe@email.com.au"),
-  arrowKt.some()
+  nonEmptyListOf(
+    "john@email.com", 
+    "john.doe@email.com.au"
+  ),
+    Organization("arrow-kt", none(), URI("https://arrow-kt.io").some()).some()
 )
 
-val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
-prettyPrinter.writeValueAsString(user)
+mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
 // {
 //   "name" : "John Doe",
 //   "emails" : [ "john@email.com", "john.doe@email.com.au" ],
@@ -60,13 +64,27 @@ prettyPrinter.writeValueAsString(user)
 //     "websiteUrl" : "https://arrow-kt.io"
 //   }
 // }
-
-val validOrganization: Validated<Nel<String>, Organization> = arrowKt.valid()
-prettyPrinter.writeValueAsString(validOrganization)
-// {
-//   "valid" : {
-//     "name" : "arrow-kt",
-//     "websiteUrl" : "https://arrow-kt.io"
-//   }
-// }
 ```
+
+More example usages can be found in [ExampleTest.kt](arrow-integrations-jackson-module/src/test/kotlin/arrow/integrations/jackson/module/ExampleTest.kt)
+
+#### Example Usage with Spring Boot
+Spring Boot uses ObjectMapper to manage json serialization and deserialization of incoming / outgoing requests.
+One way to register of arrow data types JSON serialization / deserialization support is by calling `.registerArrowModule()`
+in the `ObjectMapper` configuration bean as follows:
+
+```kotlin
+@Configuration
+class JacksonConfiguration {
+
+  @Bean
+  @Primary
+  fun customObjectMapper(): ObjectMapper = ObjectMapper()
+    .registerModule(KotlinModule(singletonSupport = SingletonSupport.CANONICALIZE))
+    .registerArrowModule()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
+    .disable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
+    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+}
+```
+When this bean is registered, the object mapper will be used to deserialize incoming and outgoing JSON payload.
