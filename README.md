@@ -49,8 +49,8 @@ val arrowUser = ArrowUser(
   nonEmptyListOf(
     "john@email.com", 
     "john.doe@email.com.au"
-  ),
-    Organization("arrow-kt", none(), URI("https://arrow-kt.io").some()).some()
+  ), 
+  Organization("arrow-kt", none(), URI("https://arrow-kt.io").some()).some()
 )
 
 mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
