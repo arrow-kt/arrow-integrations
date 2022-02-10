@@ -78,11 +78,11 @@ be configured within the registration step:
 val mapper: ObjectMapper = ObjectMapper()
   .registerKotlinModule()
   .registerArrowModule(
-    eitherModuleConfig = EitherModuleConfig("left", "right"),
-    validatedModuleConfig = ValidatedModuleConfig("invalid", "valid"),
-    iorModuleConfig = IorModuleConfig("left", "right")
+    eitherModuleConfig = EitherModuleConfig("left", "right"),           // sets the field names for either left / right
+    validatedModuleConfig = ValidatedModuleConfig("invalid", "valid"),  // sets the field names for validated invalid / valid
+    iorModuleConfig = IorModuleConfig("left", "right")                  // sets the field names for ior left / right
   )
-  .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // will not serialize None as nulls
+  .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)            // do not serialize None as nulls
 
 ```
 
