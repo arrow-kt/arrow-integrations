@@ -11,6 +11,24 @@ Global properties come from [**arrow**](https://github.com/arrow-kt/arrow) repos
 
 ## Jackson Module
 
+Include `arrow-integrations-jackson` in your gradle project:
+```groovy
+implementation 'io.arrow-kt:arrow-integrations-jackson-module:${version}'
+```
+or, using gradle kotlin-dsl.
+```kotlin
+implementation("io.arrow-kt:arrow-integrations-jackson-module:${version}")
+```
+
+Include `arrow-integrations-jackson` in your maven project:
+```xml
+<dependency>
+  <groupId>io.arrow-kt</groupId>
+  <artifactId>arrow-integrations-jackson-module</artifactId>
+  <version>${version}</version>
+</dependency>
+```
+
 To register support for arrow datatypes, simply call `.registerArrowModule()` on the object mapper as follows:
 
 ```kotlin
