@@ -70,7 +70,3 @@ prettyPrinter.writeValueAsString(validOrganization)
 //   }
 // }
 ```
-
-## Retrofit Adapter
-
-// TODO
