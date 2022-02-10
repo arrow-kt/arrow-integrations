@@ -13,7 +13,7 @@ Global properties come from [**arrow**](https://github.com/arrow-kt/arrow) repos
 
 To register support for arrow datatypes, simply call `.registerArrowModule()` on the object mapper as follows:
 
-```kotlin:ank
+```kotlin
 import arrow.integrations.jackson.module.registerArrowModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -32,75 +32,44 @@ currently supported datatypes:
 
 ### Example usage
 
-```kotlin:ank
-import arrow.core.Either
-import arrow.core.Ior
-import arrow.core.Nel
-import arrow.core.Option
-import arrow.core.Validated
-import arrow.core.bothIor
-import arrow.core.nel
-import arrow.core.none
-import arrow.core.right
-import arrow.core.some
-import arrow.core.valid
-import arrow.integrations.jackson.module.registerArrowModule
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+Serialization and deserialization of data classes with arrow data types are supported.
 
+```kotlin
 val mapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerArrowModule()
-    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // when enabled Option.none() will not be serialized as null
+  .registerKotlinModule()
+  .registerArrowModule()
+  .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // will not serialize None as nulls
 
-data class Foo(val value: Option<String>)
-data class Bar(val value: Nel<String>)
-data class Baz(val value: Either<Int, String>)
-data class Validation(val value: Validated<Int, String>)
-data class IorValue(val value: Ior<Int, String>)
+data class Organization(val name: String, val address: Option<String>, val websiteUrl: Option<URI>)
+data class ArrowUser(val name: String, val emails: NonEmptyList<String>, val organization: Option<Organization>)
 
-// serialization
+val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
+val arrowUser = ArrowUser(
+  "John Doe",
+  nonEmptyListOf("john@email.com", "john.doe@email.com.au"),
+  arrowKt.some()
+)
 
-mapper.writeValueAsString(Foo(none())) 
-// {}
+val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
+prettyPrinter.writeValueAsString(user)
+// {
+//   "name" : "John Doe",
+//   "emails" : [ "john@email.com", "john.doe@email.com.au" ],
+//   "organization" : {
+//     "name" : "arrow-kt",
+//     "websiteUrl" : "https://arrow-kt.io"
+//   }
+// }
 
-mapper.writeValueAsString(Foo("foo".some())) 
-// {"value":"foo"}
-
-mapper.writeValueAsString(Bar("bar".nel())) 
-// {"value":["bar"]}
-
-mapper.writeValueAsString(Baz("hello".right()))
-// {"value":{"right":"hello"}}
-
-mapper.writeValueAsString(Validation("hello".valid()))
-// {"value":{"valid":"hello"}}
-
-mapper.writeValueAsString(IorValue((1 to "hello").bothIor()))
-// {"value":{"left":1,"right":"hello"}}
-
-// deserialization
-
-mapper.readValue("{}", Foo::class.java) 
-// Foo(value=Option.None)
-
-mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
-// Foo(value=Option.Some(foo))
-
-mapper.readValue("""{"value":["bar"]}""", Bar::class.java) 
-// Bar(value=NonEmptyList([bar]))
-
-mapper.readValue("""{"value":{"left":5}}""", Baz::class.java)
-// Baz(value=Either.Left(5))
-
-mapper.readValue("""{"value":{"invalid":5}}""", Validation::class.java)
-// Baz(value=Validated.Invalid(5))
-
-mapper.readValue("""{"value":{"left":5}}""", IorValue::class.java)
-// IorValue(value=Ior.Left(5))
+val validOrganization: Validated<Nel<String>, Organization> = arrowKt.valid()
+prettyPrinter.writeValueAsString(validOrganization)
+// {
+//   "valid" : {
+//     "name" : "arrow-kt",
+//     "websiteUrl" : "https://arrow-kt.io"
+//   }
+// }
 ```
-
 
 ## Retrofit Adapter
 
