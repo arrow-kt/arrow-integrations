@@ -65,15 +65,28 @@ mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
 ```
 
 More example usages can be found in [ExampleTest.kt](arrow-integrations-jackson-module/src/test/kotlin/arrow/integrations/jackson/module/ExampleTest.kt)
+### Example Usage for Popular Web Frameworks
 
 In real world scenarios Jackson can be installed as the json serialization/deserialization
 engine. These serializations / deserializations are normally done
-automatically. 
+automatically.
 
-### Example Usage with Spring Boot
-Spring Boot uses ObjectMapper to manage json serialization and deserialization of incoming / outgoing requests.
-One way to register of arrow data types JSON serialization / deserialization support is by calling `.registerArrowModule()`
-in the `ObjectMapper` configuration bean as follows:
+For instance we can customize our mapper with `.registerArrowModule()` as follows.
+```kotlin
+object JsonMapper { 
+  val mapper: ObjectMapper = ObjectMapper()
+    .registerModule(KotlinModule(singletonSupport = SingletonSupport.CANONICALIZE))
+    .registerArrowModule()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .disable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
+    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+}
+```
+This can then be installed accordingly.
+
+#### Spring Boot
+
+A way to register of arrow data types JSON serialization / deserialization support in spring boot is as follows:
 
 ```kotlin
 @Configuration
@@ -81,12 +94,16 @@ class JacksonConfiguration {
 
   @Bean
   @Primary
-  fun customObjectMapper(): ObjectMapper = ObjectMapper()
-    .registerModule(KotlinModule(singletonSupport = SingletonSupport.CANONICALIZE))
-    .registerArrowModule()
-    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
-    .disable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
-    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+  fun jsonMapper(): ObjectMapper = JsonMapper.mapper
 }
 ```
 When this bean is registered, the object mapper will be used to deserialize incoming and outgoing JSON payload.
+
+#### Ktor
+
+Jackson support for arrow data type serialization / deserialization can similarly be registered in Ktor as follows:
+```kotlin
+install(ContentNegotiation) {
+  register(ContentType.Application.Json, JacksonConverter(JsonMapper.mapper))
+}
+```
