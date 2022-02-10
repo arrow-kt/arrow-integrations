@@ -30,12 +30,10 @@ currently supported datatypes:
 - `Validated<E, A>`
 - `Ior<L, R>`
 
-### Example usage
+### Example Usage
 
 Serialization and deserialization of data classes that incorporate arrow data types can be
-done as follows. In real world scenarios Jackson can be installed as the json serialization/deserialization
-engine. These serializations / deserializations are normally done 
-automatically.
+done as follows. 
 
 ```kotlin
 val mapper = ObjectMapper()
@@ -68,7 +66,11 @@ mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
 
 More example usages can be found in [ExampleTest.kt](arrow-integrations-jackson-module/src/test/kotlin/arrow/integrations/jackson/module/ExampleTest.kt)
 
-#### Example Usage with Spring Boot
+In real world scenarios Jackson can be installed as the json serialization/deserialization
+engine. These serializations / deserializations are normally done
+automatically. 
+
+### Example Usage with Spring Boot
 Spring Boot uses ObjectMapper to manage json serialization and deserialization of incoming / outgoing requests.
 One way to register of arrow data types JSON serialization / deserialization support is by calling `.registerArrowModule()`
 in the `ObjectMapper` configuration bean as follows:
