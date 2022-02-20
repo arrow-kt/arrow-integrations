@@ -6,10 +6,8 @@ import arrow.core.leftIor
 import arrow.core.none
 import arrow.core.rightIor
 import arrow.core.some
-import arrow.integrations.jackson.module.internal.InjectField
 import arrow.integrations.jackson.module.internal.ProductTypeDeserializer
 import arrow.integrations.jackson.module.internal.ProductTypeSerializer
-import arrow.integrations.jackson.module.internal.ProjectField
 import arrow.typeclasses.Semigroup
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
@@ -37,8 +35,8 @@ class IorSerializerResolver(leftFieldName: String, rightFieldName: String) : Ser
   private val serializer = ProductTypeSerializer(
     Ior::class.java,
     listOf(
-      ProjectField(leftFieldName) { ior -> ior.fold({ it.some() }, { none() }, { l, _ -> l.some() }) },
-      ProjectField(rightFieldName) { ior -> ior.fold({ none() }, { it.some() }, { _, r -> r.some() }) },
+      ProductTypeSerializer.ProjectField(leftFieldName) { ior -> ior.fold({ it.some() }, { none() }, { l, _ -> l.some() }) },
+      ProductTypeSerializer.ProjectField(rightFieldName) { ior -> ior.fold({ none() }, { it.some() }, { _, r -> r.some() }) },
     )
   )
 
@@ -66,8 +64,8 @@ class IorDeserializerResolver(
       Ior::class.java,
       javaType,
       listOf(
-        InjectField(leftFieldName) { firstValue -> firstValue.leftIor() },
-        InjectField(rightFieldName) { secondValue -> secondValue.rightIor() },
+        ProductTypeDeserializer.InjectField(leftFieldName) { firstValue -> firstValue.leftIor() },
+        ProductTypeDeserializer.InjectField(rightFieldName) { secondValue -> secondValue.rightIor() },
       )
     ) { iors ->
       // this reduce is safe because an Ior will always have either a left or a right

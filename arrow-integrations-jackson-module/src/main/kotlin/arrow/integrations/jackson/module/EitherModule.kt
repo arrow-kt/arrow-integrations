@@ -3,8 +3,6 @@ package arrow.integrations.jackson.module
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import arrow.integrations.jackson.module.internal.InjectField
-import arrow.integrations.jackson.module.internal.ProjectField
 import arrow.integrations.jackson.module.internal.UnionTypeSerializer
 import arrow.integrations.jackson.module.internal.UnionTypeDeserializer
 import com.fasterxml.jackson.core.json.PackageVersion
@@ -33,8 +31,8 @@ class EitherSerializerResolver(leftFieldName: String, rightFieldName: String) : 
   private val serializer = UnionTypeSerializer(
     Either::class.java,
     listOf(
-      ProjectField(leftFieldName) { either -> either.swap().orNone() },
-      ProjectField(rightFieldName) { either -> either.orNone() }
+      UnionTypeSerializer.ProjectField(leftFieldName) { either -> either.swap().orNone() },
+      UnionTypeSerializer.ProjectField(rightFieldName) { either -> either.orNone() }
     ),
   )
 
@@ -61,8 +59,8 @@ class EitherDeserializerResolver(
       Either::class.java,
       type,
       listOf(
-        InjectField(leftFieldName) { leftValue -> leftValue.left() },
-        InjectField(rightFieldName) { rightValue -> rightValue.right() }
+        UnionTypeDeserializer.InjectField(leftFieldName) { leftValue -> leftValue.left() },
+        UnionTypeDeserializer.InjectField(rightFieldName) { rightValue -> rightValue.right() }
       )
     )
     else -> null

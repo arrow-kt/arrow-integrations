@@ -101,7 +101,7 @@ class ExampleTest : FunSpec({
     data class Fruit(@get:JsonValue val name: String)
     data class Vegetable(val name: String, val kind: String)
 
-    val mapper = ObjectMapper()
+    val customMapper = ObjectMapper()
       .registerKotlinModule()
       .registerArrowModule(
         iorModuleConfig = IorModuleConfig("l", "r")
@@ -109,7 +109,7 @@ class ExampleTest : FunSpec({
 
     val starfruit = Fruit("starfruit")
     val spinach = Vegetable("spinach", "leafy greens")
-    mapper.writerWithDefaultPrettyPrinter().writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe """
+    customMapper.writerWithDefaultPrettyPrinter().writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe """
       {
         "l" : "starfruit",
         "r" : {

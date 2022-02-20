@@ -14,6 +14,8 @@ class UnionTypeDeserializer<T>(
   private val javaType: JavaType,
   private val fields: List<InjectField<T>>,
 ) : StdDeserializer<T>(clazz), ContextualDeserializer {
+  class InjectField<T>(val fieldName: String, val point: (Any?) -> T)
+
   private val deserializers: MutableMap<String, ElementDeserializer> = mutableMapOf()
 
   override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): T {

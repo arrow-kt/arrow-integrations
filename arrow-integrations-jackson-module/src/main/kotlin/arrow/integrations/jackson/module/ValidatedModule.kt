@@ -4,8 +4,6 @@ import arrow.core.Validated
 import arrow.core.invalid
 import arrow.core.orNone
 import arrow.core.valid
-import arrow.integrations.jackson.module.internal.InjectField
-import arrow.integrations.jackson.module.internal.ProjectField
 import arrow.integrations.jackson.module.internal.UnionTypeDeserializer
 import arrow.integrations.jackson.module.internal.UnionTypeSerializer
 import com.fasterxml.jackson.core.json.PackageVersion
@@ -34,8 +32,8 @@ class ValidatedSerializerResolver(invalidFieldName: String, validFieldName: Stri
   private val serializer = UnionTypeSerializer(
     Validated::class.java,
     listOf(
-      ProjectField(invalidFieldName) { validated -> validated.swap().orNone() },
-      ProjectField(validFieldName) { validated -> validated.orNone() },
+      UnionTypeSerializer.ProjectField(invalidFieldName) { validated -> validated.swap().orNone() },
+      UnionTypeSerializer.ProjectField(validFieldName) { validated -> validated.orNone() },
     )
   )
 
@@ -62,8 +60,8 @@ class ValidatedDeserializerResolver(
       Validated::class.java,
       type,
       listOf(
-        InjectField(invalidFieldName) { invalidValue -> invalidValue.invalid() },
-        InjectField(validFieldName) { validValue -> validValue.valid() },
+        UnionTypeDeserializer.InjectField(invalidFieldName) { invalidValue -> invalidValue.invalid() },
+        UnionTypeDeserializer.InjectField(validFieldName) { validValue -> validValue.valid() },
       )
     )
     else -> null
