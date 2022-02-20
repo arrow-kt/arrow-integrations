@@ -11,9 +11,27 @@ Global properties come from [**arrow**](https://github.com/arrow-kt/arrow) repos
 
 ## Jackson Module
 
+Include `arrow-integrations-jackson` in your gradle project:
+```groovy
+implementation 'io.arrow-kt:arrow-integrations-jackson-module:${version}'
+```
+or, using gradle kotlin-dsl.
+```kotlin
+implementation("io.arrow-kt:arrow-integrations-jackson-module:${version}")
+```
+
+Include `arrow-integrations-jackson` in your maven project:
+```xml
+<dependency>
+  <groupId>io.arrow-kt</groupId>
+  <artifactId>arrow-integrations-jackson-module</artifactId>
+  <version>${version}</version>
+</dependency>
+```
+
 To register support for arrow datatypes, simply call `.registerArrowModule()` on the object mapper as follows:
 
-```kotlin:ank
+```kotlin
 import arrow.integrations.jackson.module.registerArrowModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -26,48 +44,107 @@ val mapper = ObjectMapper()
 currently supported datatypes:
 - `Option<T>`
 - `NonEmptyList<T>` or `Nel<T>`
+- `Either<L, R>`
+- `Validated<E, A>`
+- `Ior<L, R>`
 
-Example usage:
+### Example Usage
 
-```kotlin:ank
-import arrow.core.Nel
-import arrow.core.Option
-import arrow.core.nel
-import arrow.core.none
-import arrow.core.some
-import arrow.integrations.jackson.module.registerArrowModule
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+Serialization and deserialization of data classes that incorporate arrow data types can be
+done as follows. 
 
+```kotlin
 val mapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerArrowModule()
-    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // when enabled Option.none() will not be serialized as null
+  .registerKotlinModule()
+  .registerArrowModule()
+  .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // will not serialize None as nulls
 
-data class Foo(val value: Option<String>)
-data class Bar(val value: Nel<String>)
+data class Organization(val name: String, val address: Option<String>, val websiteUrl: Option<URI>)
+data class ArrowUser(val name: String, val emails: NonEmptyList<String>, val organization: Option<Organization>)
 
-mapper.writeValueAsString(Foo(none())) 
-// {}
+val arrowUser = ArrowUser(
+  "John Doe",
+  nonEmptyListOf(
+    "john@email.com", 
+    "john.doe@email.com.au"
+  ), 
+  Organization("arrow-kt", none(), URI("https://arrow-kt.io").some()).some()
+)
 
-mapper.readValue("{}", Foo::class.java) 
-// Foo(value=Option.None)
+mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user)
+```
+which serializes as follows.
+```json
+{
+  "name" : "John Doe",
+  "emails" : [ "john@email.com", "john.doe@email.com.au" ],
+  "organization" : {
+    "name" : "arrow-kt",
+    "websiteUrl" : "https://arrow-kt.io"
+  }
+}
+```
+Notice that the `Option<T>` serializer
+is configurable via Jackson's serialization inclusion setting. In this example we have configured the serializer
+to not serialize `none()` as null, but instead omit it completely.
 
-mapper.writeValueAsString(Foo("foo".some())) 
-// {"value":"foo"}
+Various serializers / deserializers within arrow module are configurable.
+For instance the field names used for serializing / deserializing `Either`, `Validated` or `Ior` can
+be configured within the registration step:
 
-mapper.readValue("""{"value":"foo"}""", Foo::class.java) 
-// Foo(value=Option.Some(foo))
+```kotlin
+val mapper: ObjectMapper = ObjectMapper()
+  .registerKotlinModule()
+  .registerArrowModule(
+    eitherModuleConfig = EitherModuleConfig("left", "right"),           // sets the field names for either left / right
+    validatedModuleConfig = ValidatedModuleConfig("invalid", "valid"),  // sets the field names for validated invalid / valid
+    iorModuleConfig = IorModuleConfig("left", "right")                  // sets the field names for ior left / right
+  )
+  .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)            // do not serialize None as nulls
 
-mapper.writeValueAsString(Bar("bar".nel())) 
-// {"value":["bar"]}
-
-mapper.readValue("""{"value":["bar"]}""", Bar::class.java) 
-// Bar(value=NonEmptyList([bar]))
 ```
 
+More example usages can be found in [ExampleTest.kt](arrow-integrations-jackson-module/src/test/kotlin/arrow/integrations/jackson/module/ExampleTest.kt)
 
-## Retrofit Adapter
+### Example Usage for Popular Web Frameworks
 
-// TODO
+In real world scenarios Jackson can be installed as the json serialization/deserialization
+engine. These serializations / deserializations are normally done
+automatically.
+
+For instance we can customize our mapper with `.registerArrowModule()` as follows.
+```kotlin
+object JsonMapper { 
+  val mapper: ObjectMapper = ObjectMapper()
+    .registerModule(KotlinModule(singletonSupport = SingletonSupport.CANONICALIZE))
+    .registerArrowModule()
+    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    .disable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
+    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+}
+```
+This can then be installed accordingly.
+
+#### Spring Boot
+
+A way to register of arrow data types JSON serialization / deserialization support in spring boot is as follows:
+
+```kotlin
+@Configuration
+class JacksonConfiguration {
+
+  @Bean
+  @Primary
+  fun jsonMapper(): ObjectMapper = JsonMapper.mapper
+}
+```
+When this bean is registered, the object mapper will be used to deserialize incoming and outgoing JSON payload.
+
+#### Ktor
+
+Jackson support for arrow data type serialization / deserialization can similarly be registered in Ktor as follows:
+```kotlin
+install(ContentNegotiation) {
+  register(ContentType.Application.Json, JacksonConverter(JsonMapper.mapper))
+}
+```
