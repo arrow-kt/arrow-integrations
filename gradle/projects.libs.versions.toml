@@ -3,7 +3,7 @@ arrow = "1.0.1"
 dokka = "1.6.0"
 arrowGradleConfig = "0.10.0"
 kotlin = "1.6.10"
-kotest = "5.2.0"
+kotest = "5.2.2"
 kotlinBinaryCompatibilityValidator = "0.8.0"
 detekt = "1.19.0"
 animalsniffer = "1.5.4"
@@ -12,8 +12,13 @@ jacksonModuleKotlin = "2.13.2"
 [libraries]
 arrowAnnotations = { module = "io.arrow-kt:arrow-annotations", version.ref = "arrow" }
 arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+arrowCoreTest = { module = "io.arrow-kt:arrow-core-test", version.ref = "arrow" }
 arrowOptics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
 jacksonModuleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonModuleKotlin" }
+kotest-assertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-frameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+kotest-runnerJUnit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

@@ -45,25 +45,20 @@ class IorModuleTest : FunSpec() {
 
       test("should round-trip nested ior types") {
         checkAll(
-          Arb.ior(
-            Arb.ior(arbFoo, Arb.int()).orNull(),
-            Arb.ior(Arb.string(), arbBar.orNull())
-          )
-        ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> ->
-          ior.shouldRoundTrip(mapper)
-        }
+          Arb.ior(Arb.ior(arbFoo, Arb.int()).orNull(), Arb.ior(Arb.string(), arbBar.orNull()))
+        ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> -> ior.shouldRoundTrip(mapper) }
       }
 
       test("should serialize with configurable left / right field name") {
         checkAll(
-          Arb.pair(
-            Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az())
-          ).filter { it.first != it.second }
+          Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+            it.first != it.second
+          }
         ) { (leftFieldName, rightFieldName) ->
-          val mapper = ObjectMapper()
-            .registerKotlinModule()
-            .registerArrowModule(iorModuleConfig = IorModuleConfig(leftFieldName, rightFieldName))
+          val mapper =
+            ObjectMapper()
+              .registerKotlinModule()
+              .registerArrowModule(iorModuleConfig = IorModuleConfig(leftFieldName, rightFieldName))
 
           mapper.writeValueAsString(5.leftIor()) shouldBe """{"$leftFieldName":5}"""
           mapper.writeValueAsString("hello".rightIor()) shouldBe """{"$rightFieldName":"hello"}"""
@@ -75,14 +70,18 @@ class IorModuleTest : FunSpec() {
       test("should round-trip with configurable left / right field name") {
         checkAll(
           Arb.pair(
-            Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az()),
-          ).filter { it.first != it.second },
+              Arb.string(10, Codepoint.az()),
+              Arb.string(10, Codepoint.az()),
+            )
+            .filter { it.first != it.second },
           arbTestClass
         ) { (leftFieldName, rightFieldName), testClass ->
-          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule(
-            eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
-          )
+          val mapper =
+            ObjectMapper()
+              .registerKotlinModule()
+              .registerArrowModule(
+                eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
+              )
 
           testClass.shouldRoundTrip(mapper)
         }
@@ -90,7 +89,11 @@ class IorModuleTest : FunSpec() {
     }
   }
 
-  private enum class IorPolarity { Left, Both, Right }
+  private enum class IorPolarity {
+    Left,
+    Both,
+    Right
+  }
 
   private val arbTestClassJsonString = arbitrary {
     when (Arb.enum<IorPolarity>().bind()) {
@@ -143,28 +146,22 @@ class IorModuleTest : FunSpec() {
     }
   }
 
-  private data class Foo(@get:JsonProperty("foo") val fooValue: Option<Int>, val otherValue: String)
+  private data class Foo(
+    @get:JsonProperty("foo") val fooValue: Option<Int>,
+    val otherValue: String
+  )
   private data class Bar(val first: Int, val second: String, val third: Boolean)
   private data class TestClass(val ior: Ior<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {
-    Foo(
-      Arb.option(Arb.int()).bind(),
-      Arb.string().bind()
-    )
+    Foo(Arb.option(Arb.int()).bind(), Arb.string().bind())
   }
 
   private val arbBar: Arb<Bar> = arbitrary {
-    Bar(
-      Arb.int().bind(),
-      Arb.string(0..100, Codepoint.alphanumeric()).bind(),
-      Arb.boolean().bind()
-    )
+    Bar(Arb.int().bind(), Arb.string(0..100, Codepoint.alphanumeric()).bind(), Arb.boolean().bind())
   }
 
-  private val arbTestClass: Arb<TestClass> = arbitrary {
-    TestClass(Arb.ior(arbFoo, arbBar).bind())
-  }
+  private val arbTestClass: Arb<TestClass> = arbitrary { TestClass(Arb.ior(arbFoo, arbBar).bind()) }
 
   private val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
 }

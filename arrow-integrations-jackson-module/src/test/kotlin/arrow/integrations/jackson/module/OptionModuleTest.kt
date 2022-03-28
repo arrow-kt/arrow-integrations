@@ -21,7 +21,8 @@ class OptionModuleTest : UnitSpec() {
 
   init {
     "serializing Option should be the same as serializing a nullable value" {
-      checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) { option ->
+      checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) {
+        option ->
         val actual = mapper.writeValueAsString(option)
         val expected = mapper.writeValueAsString(option.orNull())
 
@@ -30,14 +31,19 @@ class OptionModuleTest : UnitSpec() {
     }
 
     "serializing Option with Include.NON_ABSENT should honor such configuration and omit serialization when option is empty" {
-      val mapperWithSettings = ObjectMapper().registerModule(OptionModule).registerKotlinModule()
-        .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
+      val mapperWithSettings =
+        ObjectMapper()
+          .registerModule(OptionModule)
+          .registerKotlinModule()
+          .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
 
       data class Wrapper(val option: Option<Any>)
 
-      checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) { option ->
+      checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) {
+        option ->
         val actual = mapperWithSettings.writeValueAsString(Wrapper(option))
-        val expected = option.fold({ "{}" }, { mapperWithSettings.writeValueAsString(Wrapper(it.some())) })
+        val expected =
+          option.fold({ "{}" }, { mapperWithSettings.writeValueAsString(Wrapper(it.some())) })
 
         actual shouldBe expected
       }

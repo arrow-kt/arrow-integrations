@@ -1,13 +1,20 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id "org.jetbrains.kotlin.jvm"
+  id(libs.plugins.kotlin.jvm.get().pluginId)
+  alias(libs.plugins.arrowGradleConfig.kotlin)
+  alias(libs.plugins.arrowGradleConfig.publish)
+  alias(libs.plugins.arrowGradleConfig.versioning)
+  alias(libs.plugins.animalsniffer)
 }
 
-// apply from: "$ANIMALSNIFFER"
-
+animalsniffer {
+  sourceSets = sourceSets.find { it.name == "main" }?.let(::listOf).orEmpty() // Ignore tests
+  ignore = listOf("java.lang.*")
+}
 dependencies {
-    compile "io.arrow-kt:arrow-core:$ARROW_VERSION"
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$JACKSON_MODULE_KOTLIN_VERSION"
-    testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
-    testImplementation "io.kotest:kotest-property:$KOTEST_VERSION"
-    testImplementation "io.kotest:kotest-runner-junit5:$KOTEST_VERSION"
+  implementation(libs.arrowCore)
+  implementation(libs.jacksonModuleKotlin)
+  testImplementation(libs.arrowCoreTest)
+  testImplementation(libs.kotest.property)
+  testImplementation(libs.kotest.runnerJUnit5)
 }

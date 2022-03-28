@@ -7,16 +7,16 @@ plugins {
 // apply from: "$ANIMALSNIFFER"
 
 dependencies {
-    compile "io.arrow-kt:arrow-fx-coroutines:$ARROW_VERSION"
-    compile "io.arrow-kt:arrow-annotations:$ARROW_VERSION"
-    compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
-    compileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
-    testCompileOnly "io.arrow-kt:arrow-meta:$ARROW_VERSION"
-    testCompile "io.arrow-kt:arrow-core-test:$ARROW_VERSION"
-    testCompile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
-    testCompile "com.squareup.okhttp3:mockwebserver:$MOCKWEBSERVER_VERSION"
-    testCompile "io.arrow-kt:arrow-fx-rx2:$ARROW_VERSION"
-    testCompile "io.arrow-kt:arrow-fx-coroutines:$ARROW_VERSION"
+    compile "io.arrow-kt:arrow-fx-coroutines:1.0.1"
+    compile "io.arrow-kt:arrow-annotations:1.0.1"
+    compile "com.squareup.retrofit2:retrofit:$2.8.1"
+    compileOnly "io.arrow-kt:arrow-meta:1.0.1"
+    testCompileOnly "io.arrow-kt:arrow-meta:1.0.1"
+    testCompile "io.arrow-kt:arrow-core-test:1.0.1"
+    testCompile "com.squareup.retrofit2:converter-gson:$2.8.1"
+    testCompile "com.squareup.okhttp3:mockwebserver:3.13.1"
+    testCompile "io.arrow-kt:arrow-fx-rx2:1.0.1"
+    testCompile "io.arrow-kt:arrow-fx-coroutines:1.0.1"
 }
 
 // TODO

@@ -18,7 +18,9 @@ class NonEmptyListModuleTest : UnitSpec() {
 
   init {
     "serializing NonEmptyList should be the same as serializing the underlying list" {
-      checkAll(Arb.nonEmptyList(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) { list ->
+      checkAll(
+        Arb.nonEmptyList(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))
+      ) { list ->
         val actual = mapper.writeValueAsString(list)
         val expected = mapper.writeValueAsString(list.all)
 
@@ -29,7 +31,9 @@ class NonEmptyListModuleTest : UnitSpec() {
     "serializing NonEmptyList and then deserialize it should be the same as before the deserialization" {
       checkAll(
         Arb.choice(
-          arbitrary { Arb.nonEmptyList(Arb.someObject()).bind() to jacksonTypeRef<Nel<SomeObject>>() },
+          arbitrary {
+            Arb.nonEmptyList(Arb.someObject()).bind() to jacksonTypeRef<Nel<SomeObject>>()
+          },
           arbitrary { Arb.nonEmptyList(Arb.int()).bind() to jacksonTypeRef<Nel<Int>>() },
           arbitrary { Arb.nonEmptyList(Arb.string()).bind() to jacksonTypeRef<Nel<String>>() },
           arbitrary { Arb.nonEmptyList(Arb.boolean()).bind() to jacksonTypeRef<Nel<Boolean>>() }

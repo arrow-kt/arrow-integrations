@@ -20,10 +20,8 @@ import com.fasterxml.jackson.databind.deser.Deserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.Serializers
 
-class IorModule(
-  private val leftFieldName: String,
-  private val rightFieldName: String
-) : SimpleModule(IorModule::class.java.canonicalName, PackageVersion.VERSION) {
+public class IorModule(private val leftFieldName: String, private val rightFieldName: String) :
+  SimpleModule(IorModule::class.java.canonicalName, PackageVersion.VERSION) {
   override fun setupModule(context: SetupContext) {
     super.setupModule(context)
     context.addDeserializers(IorDeserializerResolver(leftFieldName, rightFieldName))
@@ -31,26 +29,32 @@ class IorModule(
   }
 }
 
-class IorSerializerResolver(leftFieldName: String, rightFieldName: String) : Serializers.Base() {
-  private val serializer = ProductTypeSerializer(
-    Ior::class.java,
-    listOf(
-      ProductTypeSerializer.ProjectField(leftFieldName) { ior -> ior.fold({ it.some() }, { none() }, { l, _ -> l.some() }) },
-      ProductTypeSerializer.ProjectField(rightFieldName) { ior -> ior.fold({ none() }, { it.some() }, { _, r -> r.some() }) },
+public class IorSerializerResolver(leftFieldName: String, rightFieldName: String) : Serializers.Base() {
+  private val serializer =
+    ProductTypeSerializer(
+      Ior::class.java,
+      listOf(
+        ProductTypeSerializer.ProjectField(leftFieldName) { ior ->
+          ior.fold({ it.some() }, { none() }, { l, _ -> l.some() })
+        },
+        ProductTypeSerializer.ProjectField(rightFieldName) { ior ->
+          ior.fold({ none() }, { it.some() }, { _, r -> r.some() })
+        },
+      )
     )
-  )
 
   override fun findSerializer(
     config: SerializationConfig,
     type: JavaType,
     beanDesc: BeanDescription?
-  ): JsonSerializer<*>? = when {
-    Ior::class.java.isAssignableFrom(type.rawClass) -> serializer
-    else -> null
-  }
+  ): JsonSerializer<*>? =
+    when {
+      Ior::class.java.isAssignableFrom(type.rawClass) -> serializer
+      else -> null
+    }
 }
 
-class IorDeserializerResolver(
+public class IorDeserializerResolver(
   private val leftFieldName: String,
   private val rightFieldName: String
 ) : Deserializers.Base() {
@@ -59,24 +63,31 @@ class IorDeserializerResolver(
     javaType: JavaType,
     config: DeserializationConfig,
     beanDesc: BeanDescription?
-  ): JsonDeserializer<*>? = when {
-    Ior::class.java.isAssignableFrom(javaType.rawClass) -> ProductTypeDeserializer(
-      Ior::class.java,
-      javaType,
-      listOf(
-        ProductTypeDeserializer.InjectField(leftFieldName) { firstValue -> firstValue.leftIor() },
-        ProductTypeDeserializer.InjectField(rightFieldName) { secondValue -> secondValue.rightIor() },
-      )
-    ) { iors ->
-      // this reduce is safe because an Ior will always have either a left or a right
-      iors.reduce { first, second ->
-        first.combine(Semigroup.anyNonNull(), Semigroup.anyNonNull(), second)
-      }
+  ): JsonDeserializer<*>? =
+    when {
+      Ior::class.java.isAssignableFrom(javaType.rawClass) ->
+        ProductTypeDeserializer(
+          Ior::class.java,
+          javaType,
+          listOf(
+            ProductTypeDeserializer.InjectField(leftFieldName) { firstValue ->
+              firstValue.leftIor()
+            },
+            ProductTypeDeserializer.InjectField(rightFieldName) { secondValue ->
+              secondValue.rightIor()
+            },
+          )
+        ) { iors ->
+          // this reduce is safe because an Ior will always have either a left or a right
+          iors.reduce { first, second ->
+            first.combine(Semigroup.anyNonNull(), Semigroup.anyNonNull(), second)
+          }
+        }
+      else -> null
     }
-    else -> null
-  }
 
-  private fun Semigroup.Companion.anyNonNull(): Semigroup<Any?> = object : Semigroup<Any?> {
-    override fun Any?.combine(b: Any?): Any? = b ?: this
-  }
+  private fun Semigroup.Companion.anyNonNull(): Semigroup<Any?> =
+    object : Semigroup<Any?> {
+      override fun Any?.combine(b: Any?): Any? = b ?: this
+    }
 }

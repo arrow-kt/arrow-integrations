@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
   alias(libs.plugins.kotlin.jvm) apply false
@@ -5,6 +7,7 @@ plugins {
   alias(libs.plugins.arrowGradleConfig.nexus)
   alias(libs.plugins.arrowGradleConfig.formatter)
   alias(libs.plugins.arrowGradleConfig.versioning)
+  alias(libs.plugins.kotlin.binaryCompatibilityValidator)
 }
 
 allprojects {
