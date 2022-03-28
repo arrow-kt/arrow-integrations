@@ -7,8 +7,6 @@
 
 Λrrow Integrations is part of [**Λrrow**](https://arrow-kt.io).
 
-Global properties come from [**arrow**](https://github.com/arrow-kt/arrow) repository.
-
 ## Jackson Module
 
 Include `arrow-integrations-jackson` in your gradle project:

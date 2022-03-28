@@ -1,0 +1,29 @@
+[versions]
+arrow = "1.0.1"
+dokka = "1.6.0"
+arrowGradleConfig = "0.10.0"
+kotlin = "1.6.10"
+kotest = "5.2.0"
+kotlinBinaryCompatibilityValidator = "0.8.0"
+detekt = "1.19.0"
+animalsniffer = "1.5.4"
+jacksonModuleKotlin = "2.13.2"
+
+[libraries]
+arrowAnnotations = { module = "io.arrow-kt:arrow-annotations", version.ref = "arrow" }
+arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+arrowOptics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
+jacksonModuleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonModuleKotlin" }
+
+[plugins]
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+arrowGradleConfig-formatter = { id = "io.arrow-kt.arrow-gradle-config-formatter", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-kotlin = { id = "io.arrow-kt.arrow-gradle-config-kotlin", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-nexus = { id = "io.arrow-kt.arrow-gradle-config-nexus", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-publish = { id = "io.arrow-kt.arrow-gradle-config-publish", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-versioning = { id = "io.arrow-kt.arrow-gradle-config-versioning", version.ref = "arrowGradleConfig" }
+kotlin-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinBinaryCompatibilityValidator" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+animalsniffer = { id = "ru.vyarus.animalsniffer", version.ref = "animalsniffer" }

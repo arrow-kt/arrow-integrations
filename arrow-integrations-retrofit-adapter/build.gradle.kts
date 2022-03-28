@@ -1,11 +1,9 @@
+/*
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id "org.jlleitschuh.gradle.ktlint"
 }
 
-apply from: "$SUB_PROJECT"
-// apply from: "$DOC_CREATION"
-apply from: "$PUBLICATION"
 // apply from: "$ANIMALSNIFFER"
 
 dependencies {
@@ -31,3 +29,4 @@ animalsniffer {
 dependencies {
     signature 'net.sf.androidscents.signature:android-api-level-21:5.0.1_r2@signature'
 }
+*/
