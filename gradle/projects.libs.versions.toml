@@ -8,6 +8,7 @@ kotlinBinaryCompatibilityValidator = "0.8.0"
 detekt = "1.19.0"
 animalsniffer = "1.5.4"
 jacksonModuleKotlin = "2.13.2"
+animalsnifferAnnoation = "1.21"
 
 [libraries]
 arrowAnnotations = { module = "io.arrow-kt:arrow-annotations", version.ref = "arrow" }
@@ -19,6 +20,7 @@ kotest-assertionsCore = { module = "io.kotest:kotest-assertions-core", version.r
 kotest-frameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-runnerJUnit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+animalsniffer-annotation = {module = "org.codehaus.mojo:animal-sniffer-annotations", version.ref = "animalsnifferAnnoation"}
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

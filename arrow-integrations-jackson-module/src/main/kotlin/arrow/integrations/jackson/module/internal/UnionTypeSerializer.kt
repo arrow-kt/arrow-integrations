@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer
 
 public class UnionTypeSerializer<T>(clazz: Class<T>, private val fields: List<ProjectField<T>>) :
   StdSerializer<T>(clazz) {
-  public class ProjectField<T>(public val fieldName: String, public val getOption: (T) -> Option<*>)
+  public class ProjectField<T>(
+    public val fieldName: String,
+    public val getOption: (T) -> Option<*>
+  )
 
   override fun serialize(value: T, gen: JsonGenerator, provider: SerializerProvider) {
     val project =

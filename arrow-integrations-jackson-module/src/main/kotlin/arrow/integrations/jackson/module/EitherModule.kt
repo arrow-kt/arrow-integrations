@@ -25,7 +25,8 @@ public class EitherModule(private val leftFieldName: String, private val rightFi
   }
 }
 
-public class EitherSerializerResolver(leftFieldName: String, rightFieldName: String) : Serializers.Base() {
+public class EitherSerializerResolver(leftFieldName: String, rightFieldName: String) :
+  Serializers.Base() {
   private val serializer =
     UnionTypeSerializer(
       Either::class.java,

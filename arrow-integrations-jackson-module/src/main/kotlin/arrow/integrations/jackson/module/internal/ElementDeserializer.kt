@@ -16,7 +16,11 @@ public data class ElementDeserializer(
   val typeDeserializer: Option<TypeDeserializer>
 ) {
   public companion object {
-    public fun resolve(containedType: JavaType, context: DeserializationContext, property: BeanProperty?): ElementDeserializer =
+    public fun resolve(
+      containedType: JavaType,
+      context: DeserializationContext,
+      property: BeanProperty?
+    ): ElementDeserializer =
       ElementDeserializer(
         deserializer = context.findContextualValueDeserializer(containedType, property).toOption(),
         typeDeserializer =

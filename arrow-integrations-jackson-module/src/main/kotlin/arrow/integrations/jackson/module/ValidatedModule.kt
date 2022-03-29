@@ -17,8 +17,10 @@ import com.fasterxml.jackson.databind.deser.Deserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.Serializers
 
-public class ValidatedModule(private val invalidFieldName: String, private val validFieldName: String) :
-  SimpleModule(ValidatedModule::class.java.canonicalName, PackageVersion.VERSION) {
+public class ValidatedModule(
+  private val invalidFieldName: String,
+  private val validFieldName: String
+) : SimpleModule(ValidatedModule::class.java.canonicalName, PackageVersion.VERSION) {
   override fun setupModule(context: SetupContext) {
     super.setupModule(context)
     context.addDeserializers(ValidatedDeserializerResolver(invalidFieldName, validFieldName))

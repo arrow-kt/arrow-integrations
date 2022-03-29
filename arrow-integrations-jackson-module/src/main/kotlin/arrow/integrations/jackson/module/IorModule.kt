@@ -29,7 +29,8 @@ public class IorModule(private val leftFieldName: String, private val rightField
   }
 }
 
-public class IorSerializerResolver(leftFieldName: String, rightFieldName: String) : Serializers.Base() {
+public class IorSerializerResolver(leftFieldName: String, rightFieldName: String) :
+  Serializers.Base() {
   private val serializer =
     ProductTypeSerializer(
       Ior::class.java,
