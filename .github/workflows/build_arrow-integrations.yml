@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 90
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v1
     - name: Build
@@ -28,7 +28,7 @@ jobs:
         done
     - name: Make test reports available to download
       if: ${{ always() }}
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: test-reports
         path: test-reports
