@@ -8,7 +8,7 @@ env:
 
 
 jobs:
-  pull_request:
+  build:
 
     runs-on: ubuntu-latest
     timeout-minutes: 20
