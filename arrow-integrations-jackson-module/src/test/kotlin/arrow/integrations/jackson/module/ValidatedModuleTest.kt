@@ -83,10 +83,17 @@ class ValidatedModuleTest : FunSpec() {
       }
 
       test("should round-trip with wildcard types") {
-        checkAll(Arb.validated(Arb.int(1..10), Arb.string(10, Codepoint.az()))) { original: Validated<*, *> ->
+        checkAll(
+          Arb.validated(
+            Arb.int(1..10),
+            Arb.string(10, Codepoint.az())
+          )
+        ) { original: Validated<*, *> ->
           val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
           val serialized = mapper.writeValueAsString(original)
-          val deserialized: Validated<*, *> = shouldNotThrowAny { mapper.readValue(serialized, Validated::class.java) }
+          val deserialized: Validated<*, *> = shouldNotThrowAny {
+            mapper.readValue(serialized, Validated::class.java)
+          }
           deserialized shouldBe original
         }
       }

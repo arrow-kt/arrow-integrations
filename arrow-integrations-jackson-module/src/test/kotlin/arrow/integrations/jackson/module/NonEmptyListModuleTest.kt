@@ -2,7 +2,6 @@ package arrow.integrations.jackson.module
 
 import arrow.core.Nel
 import arrow.core.NonEmptyList
-import arrow.core.nonEmptyListOf
 import arrow.core.test.UnitSpec
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef

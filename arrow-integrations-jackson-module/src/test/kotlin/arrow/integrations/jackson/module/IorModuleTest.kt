@@ -92,7 +92,9 @@ class IorModuleTest : FunSpec() {
         checkAll(Arb.ior(Arb.int(1..10), Arb.string(10, Codepoint.az()))) { original: Ior<*, *> ->
           val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
           val serialized = mapper.writeValueAsString(original)
-          val deserialized: Ior<*, *> = shouldNotThrowAny { mapper.readValue(serialized, Ior::class.java) }
+          val deserialized: Ior<*, *> = shouldNotThrowAny {
+            mapper.readValue(serialized, Ior::class.java)
+          }
           deserialized shouldBe original
         }
       }
