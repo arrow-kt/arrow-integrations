@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
@@ -62,6 +63,15 @@ class OptionModuleTest : UnitSpec() {
         val decoded = mapper.readValue(encoded, typeReference)
 
         decoded shouldBe option
+      }
+    }
+
+    "should round-trip on wildcard types" {
+      val mapper = ObjectMapper().registerArrowModule()
+      checkAll(Arb.option(Arb.int(1..10))) { original: Option<*> ->
+        val serialized = mapper.writeValueAsString(original)
+        val deserialized = shouldNotThrowAny { mapper.readValue(serialized, Option::class.java) }
+        deserialized shouldBe original
       }
     }
   }
