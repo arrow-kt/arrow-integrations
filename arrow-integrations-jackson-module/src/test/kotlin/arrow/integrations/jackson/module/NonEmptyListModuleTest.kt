@@ -1,6 +1,8 @@
 package arrow.integrations.jackson.module
 
 import arrow.core.Nel
+import arrow.core.NonEmptyList
+import arrow.core.nonEmptyListOf
 import arrow.core.test.UnitSpec
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
@@ -50,6 +52,18 @@ class NonEmptyListModuleTest : UnitSpec() {
 
         decoded shouldBe wrapper
       }
+    }
+
+    "After ObjectMapper.registerArrowModule() NonEmptyList deserialization fails with NullPointerException" {
+      val mapperWithSettings =
+        ObjectMapper()
+          .registerArrowModule()
+
+      val original = nonEmptyListOf("foo", "bar")
+      val serialized: String = mapperWithSettings.writeValueAsString(original)
+      val deserialized: NonEmptyList<*> = mapperWithSettings.readValue(serialized, NonEmptyList::class.java)
+
+      deserialized shouldBe original
     }
   }
 }
