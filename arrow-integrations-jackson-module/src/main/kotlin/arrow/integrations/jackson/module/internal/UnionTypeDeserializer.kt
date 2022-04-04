@@ -9,39 +9,50 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 
-class UnionTypeDeserializer<T>(
+public class UnionTypeDeserializer<T>(
   private val clazz: Class<T>,
   private val javaType: JavaType,
   private val fields: List<InjectField<T>>,
 ) : StdDeserializer<T>(clazz), ContextualDeserializer {
-  class InjectField<T>(val fieldName: String, val point: (Any?) -> T)
+  public class InjectField<T>(public val fieldName: String, public val point: (Any?) -> T)
 
   private val deserializers: MutableMap<String, ElementDeserializer> = mutableMapOf()
 
   override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): T {
     parser.nextToken()
-    return fields.firstOrNone { parser.currentName == it.fieldName }.fold(
-      {
-        val validFields = fields.map { it.fieldName }
-        val message = "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
-        @Suppress("UNCHECKED_CAST")
-        ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
-      },
-      { injectField ->
-        val elementDeserializer = requireNotNull(deserializers[injectField.fieldName]) {
-          "unexpected deserializer not found"
+    return fields
+      .firstOrNone { parser.currentName == it.fieldName }
+      .fold(
+        {
+          val validFields = fields.map { it.fieldName }
+          val message =
+            "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
+          @Suppress("UNCHECKED_CAST")
+          ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
+        },
+        { injectField ->
+          val elementDeserializer =
+            requireNotNull(deserializers[injectField.fieldName]) {
+              "unexpected deserializer not found"
+            }
+          val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
+          injectField.point(value)
         }
-        val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
-        injectField.point(value)
-      }
-    )
+      )
   }
 
-  override fun createContextual(ctxt: DeserializationContext, property: BeanProperty?): JsonDeserializer<*> =
+  override fun createContextual(
+    ctxt: DeserializationContext,
+    property: BeanProperty?
+  ): JsonDeserializer<*> =
     UnionTypeDeserializer(clazz, javaType, fields).also { deserializer ->
       fields.forEachIndexed { index, field ->
         deserializer.deserializers[field.fieldName] =
-          ElementDeserializer.resolve(ctxt.contextualType.containedTypeOrUnknown(index), ctxt, property)
+          ElementDeserializer.resolve(
+            ctxt.contextualType.containedTypeOrUnknown(index),
+            ctxt,
+            property
+          )
       }
     }
 }

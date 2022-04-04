@@ -54,14 +54,14 @@ class EitherModuleTest : FunSpec() {
 
       test("should serialize with configurable left / right field name") {
         checkAll(
-          Arb.pair(
-            Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az())
-          ).filter { it.first != it.second }
+          Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+            it.first != it.second
+          }
         ) { (leftFieldName, rightFieldName) ->
-          val mapper = ObjectMapper()
-            .registerKotlinModule()
-            .registerArrowModule(EitherModuleConfig(leftFieldName, rightFieldName))
+          val mapper =
+            ObjectMapper()
+              .registerKotlinModule()
+              .registerArrowModule(EitherModuleConfig(leftFieldName, rightFieldName))
 
           mapper.writeValueAsString(5.left()) shouldBe """{"$leftFieldName":5}"""
           mapper.writeValueAsString("hello".right()) shouldBe """{"$rightFieldName":"hello"}"""
@@ -71,14 +71,18 @@ class EitherModuleTest : FunSpec() {
       test("should round-trip with configurable left / right field name") {
         checkAll(
           Arb.pair(
-            Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az()),
-          ).filter { it.first != it.second },
+              Arb.string(10, Codepoint.az()),
+              Arb.string(10, Codepoint.az()),
+            )
+            .filter { it.first != it.second },
           arbTestClass
         ) { (leftFieldName, rightFieldName), testClass ->
-          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule(
-            eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
-          )
+          val mapper =
+            ObjectMapper()
+              .registerKotlinModule()
+              .registerArrowModule(
+                eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
+              )
 
           testClass.shouldRoundTrip(mapper)
         }
@@ -115,23 +119,19 @@ class EitherModuleTest : FunSpec() {
     }
   }
 
-  private data class Foo(@get:JsonProperty("foo") val fooValue: Option<Int>, val otherValue: String)
+  private data class Foo(
+    @get:JsonProperty("foo") val fooValue: Option<Int>,
+    val otherValue: String
+  )
   private data class Bar(val first: Int, val second: String, val third: Boolean)
   private data class TestClass(val either: Either<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {
-    Foo(
-      Arb.option(Arb.int()).bind(),
-      Arb.string().bind()
-    )
+    Foo(Arb.option(Arb.int()).bind(), Arb.string().bind())
   }
 
   private val arbBar: Arb<Bar> = arbitrary {
-    Bar(
-      Arb.int().bind(),
-      Arb.string(0..100, Codepoint.alphanumeric()).bind(),
-      Arb.boolean().bind()
-    )
+    Bar(Arb.int().bind(), Arb.string(0..100, Codepoint.alphanumeric()).bind(), Arb.boolean().bind())
   }
 
   private val arbTestClass: Arb<TestClass> = arbitrary {

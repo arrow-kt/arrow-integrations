@@ -16,7 +16,8 @@ import com.fasterxml.jackson.databind.type.CollectionType
 import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.databind.util.StdConverter
 
-object NonEmptyListModule : SimpleModule(NonEmptyListModule::class.java.canonicalName, PackageVersion.VERSION) {
+public object NonEmptyListModule :
+  SimpleModule(NonEmptyListModule::class.java.canonicalName, PackageVersion.VERSION) {
   init {
     addSerializer(
       NonEmptyList::class.java,
@@ -30,7 +31,7 @@ object NonEmptyListModule : SimpleModule(NonEmptyListModule::class.java.canonica
   }
 }
 
-object NonEmptyListSerializationConverter : StdConverter<NonEmptyList<*>, List<*>>() {
+public object NonEmptyListSerializationConverter : StdConverter<NonEmptyList<*>, List<*>>() {
   override fun convert(value: NonEmptyList<*>?): List<*>? = value?.all.orEmpty()
 }
 
@@ -38,7 +39,11 @@ private class NonEmptyListDeserializationConverter(private val elementType: Java
   StdConverter<List<Any?>, NonEmptyList<Any?>?>() {
 
   override fun convert(value: List<*>?): NonEmptyList<*>? =
-    value?.let { NonEmptyList.fromList(it).getOrElse { throw IllegalArgumentException("NonEmptyList cannot be empty") } }
+    value?.let {
+      NonEmptyList.fromList(it).getOrElse {
+        throw IllegalArgumentException("NonEmptyList cannot be empty")
+      }
+    }
 
   override fun getInputType(typeFactory: TypeFactory): JavaType =
     typeFactory.constructCollectionType(List::class.java, elementType)
@@ -47,7 +52,7 @@ private class NonEmptyListDeserializationConverter(private val elementType: Java
     typeFactory.constructCollectionLikeType(NonEmptyList::class.java, elementType)
 }
 
-object NonEmptyListDeserializerResolver : Deserializers.Base() {
+public object NonEmptyListDeserializerResolver : Deserializers.Base() {
 
   override fun findCollectionDeserializer(
     type: CollectionType,
@@ -57,7 +62,9 @@ object NonEmptyListDeserializerResolver : Deserializers.Base() {
     elementDeserializer: JsonDeserializer<*>?
   ): JsonDeserializer<NonEmptyList<*>>? =
     if (NonEmptyList::class.java.isAssignableFrom(type.rawClass)) {
-      StdDelegatingDeserializer<NonEmptyList<*>>(NonEmptyListDeserializationConverter(type.bindings.getBoundType(0)))
+      StdDelegatingDeserializer<NonEmptyList<*>>(
+        NonEmptyListDeserializationConverter(type.bindings.getBoundType(0))
+      )
     } else {
       null
     }

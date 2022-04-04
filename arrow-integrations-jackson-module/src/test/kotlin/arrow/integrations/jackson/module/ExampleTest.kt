@@ -16,34 +16,43 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.net.URI
 
-class ExampleTest : FunSpec({
-
-  data class Organization(val name: String, val address: Option<String>, val websiteUrl: Option<URI>)
-
-  data class ArrowUser(
-    val name: String,
-    val emails: NonEmptyList<String>,
-    val organization: Option<Organization>
-  )
-
-  val mapper = ObjectMapper()
-    .registerKotlinModule()
-    .registerArrowModule()
-    .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // will not serialize None as nulls
-
-  val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
-
-  test("example #1: data structure serialization") {
-    val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
-    val arrowUser = ArrowUser(
-      "John Doe",
-      nonEmptyListOf("john@email.com", "john.doe@email.com.au"),
-      arrowKt.some()
+class ExampleTest :
+  FunSpec({
+    data class Organization(
+      val name: String,
+      val address: Option<String>,
+      val websiteUrl: Option<URI>
     )
 
-    val jsonString = prettyPrinter.writeValueAsString(arrowUser)
+    data class ArrowUser(
+      val name: String,
+      val emails: NonEmptyList<String>,
+      val organization: Option<Organization>
+    )
 
-    jsonString shouldBe """
+    val mapper =
+      ObjectMapper()
+        .registerKotlinModule()
+        .registerArrowModule()
+        .setSerializationInclusion(
+          JsonInclude.Include.NON_ABSENT
+        ) // will not serialize None as nulls
+
+    val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
+
+    test("example #1: data structure serialization") {
+      val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
+      val arrowUser =
+        ArrowUser(
+          "John Doe",
+          nonEmptyListOf("john@email.com", "john.doe@email.com.au"),
+          arrowKt.some()
+        )
+
+      val jsonString = prettyPrinter.writeValueAsString(arrowUser)
+
+      jsonString shouldBe
+        """
       {
         "name" : "John Doe",
         "emails" : [ "john@email.com", "john.doe@email.com.au" ],
@@ -54,12 +63,13 @@ class ExampleTest : FunSpec({
       }
     """.trimIndent()
 
-    mapper.readValue(jsonString, ArrowUser::class.java) shouldBe arrowUser
-  }
+      mapper.readValue(jsonString, ArrowUser::class.java) shouldBe arrowUser
+    }
 
-  test("example #2: validated") {
-    val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
-    prettyPrinter.writeValueAsString(arrowKt.valid()) shouldBe """
+    test("example #2: validated") {
+      val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
+      prettyPrinter.writeValueAsString(arrowKt.valid()) shouldBe
+        """
       {
         "valid" : {
           "name" : "arrow-kt",
@@ -67,26 +77,28 @@ class ExampleTest : FunSpec({
         }
       }
     """.trimIndent()
-  }
+    }
 
-  test("example #3: either") {
-    data class Fruit(@get:JsonValue val name: String)
+    test("example #3: either") {
+      data class Fruit(@get:JsonValue val name: String)
 
-    val apricot = Fruit("apricot")
-    prettyPrinter.writeValueAsString(apricot.right()) shouldBe """
+      val apricot = Fruit("apricot")
+      prettyPrinter.writeValueAsString(apricot.right()) shouldBe
+        """
       {
         "right" : "apricot"
       }
     """.trimIndent()
-  }
+    }
 
-  test("example #4: ior") {
-    data class Fruit(@get:JsonValue val name: String)
-    data class Vegetable(val name: String, val kind: String)
+    test("example #4: ior") {
+      data class Fruit(@get:JsonValue val name: String)
+      data class Vegetable(val name: String, val kind: String)
 
-    val starfruit = Fruit("starfruit")
-    val spinach = Vegetable("spinach", "leafy greens")
-    prettyPrinter.writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe """
+      val starfruit = Fruit("starfruit")
+      val spinach = Vegetable("spinach", "leafy greens")
+      prettyPrinter.writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe
+        """
       {
         "left" : "starfruit",
         "right" : {
@@ -95,21 +107,23 @@ class ExampleTest : FunSpec({
         }
       }
     """.trimIndent()
-  }
+    }
 
-  test("example #5: customizing field names") {
-    data class Fruit(@get:JsonValue val name: String)
-    data class Vegetable(val name: String, val kind: String)
+    test("example #5: customizing field names") {
+      data class Fruit(@get:JsonValue val name: String)
+      data class Vegetable(val name: String, val kind: String)
 
-    val customMapper = ObjectMapper()
-      .registerKotlinModule()
-      .registerArrowModule(
-        iorModuleConfig = IorModuleConfig("l", "r")
-      )
+      val customMapper =
+        ObjectMapper()
+          .registerKotlinModule()
+          .registerArrowModule(iorModuleConfig = IorModuleConfig("l", "r"))
 
-    val starfruit = Fruit("starfruit")
-    val spinach = Vegetable("spinach", "leafy greens")
-    customMapper.writerWithDefaultPrettyPrinter().writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe """
+      val starfruit = Fruit("starfruit")
+      val spinach = Vegetable("spinach", "leafy greens")
+      customMapper
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(Pair(starfruit, spinach).bothIor()) shouldBe
+        """
       {
         "l" : "starfruit",
         "r" : {
@@ -118,5 +132,5 @@ class ExampleTest : FunSpec({
         }
       }
     """.trimIndent()
-  }
-})
+    }
+  })

@@ -27,12 +27,11 @@ import io.kotest.property.checkAll
 class ValidatedModuleTest : FunSpec() {
   init {
     context("json serialization / deserialization") {
-      test("should round-trip") {
-        checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
-      }
+      test("should round-trip") { checkAll(arbTestClass) { it.shouldRoundTrip(mapper) } }
 
       test("should round-trip nullable types") {
-        checkAll(Arb.validated(arbFoo.orNull(), arbBar.orNull())) { validated: Validated<Foo?, Bar?> ->
+        checkAll(Arb.validated(arbFoo.orNull(), arbBar.orNull())) { validated: Validated<Foo?, Bar?>
+          ->
           validated.shouldRoundTrip(mapper)
         }
       }
@@ -42,26 +41,24 @@ class ValidatedModuleTest : FunSpec() {
       }
 
       test("should round-trip nested validated types") {
-        checkAll(
-          Arb.validated(
-            Arb.int(),
-            Arb.validated(Arb.int(), Arb.string()).orNull()
-          )
-        ) { validated: Validated<Int, Validated<Int, String>?> ->
+        checkAll(Arb.validated(Arb.int(), Arb.validated(Arb.int(), Arb.string()).orNull())) {
+          validated: Validated<Int, Validated<Int, String>?> ->
           validated.shouldRoundTrip(mapper)
         }
       }
 
       test("should serialize with configurable invalid / valid field name") {
         checkAll(
-          Arb.pair(
-            Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az())
-          ).filter { it.first != it.second }
+          Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+            it.first != it.second
+          }
         ) { (invalidFieldName, validFieldName) ->
-          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule(
-            validatedModuleConfig = ValidatedModuleConfig(invalidFieldName, validFieldName)
-          )
+          val mapper =
+            ObjectMapper()
+              .registerKotlinModule()
+              .registerArrowModule(
+                validatedModuleConfig = ValidatedModuleConfig(invalidFieldName, validFieldName)
+              )
 
           mapper.writeValueAsString(5.invalid()) shouldBe """{"$invalidFieldName":5}"""
           mapper.writeValueAsString("hello".valid()) shouldBe """{"$validFieldName":"hello"}"""
@@ -70,15 +67,15 @@ class ValidatedModuleTest : FunSpec() {
 
       test("should round-trip with configurable invalid / valid field name") {
         checkAll(
-          Arb.pair(
-            Arb.string(10, Codepoint.az()),
-            Arb.string(10, Codepoint.az())
-          ).filter { it.first != it.second },
+          Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+            it.first != it.second
+          },
           arbTestClass
         ) { (invalidFieldName, validFieldName), testClass ->
-          val mapper = ObjectMapper()
-            .registerKotlinModule()
-            .registerArrowModule(EitherModuleConfig(invalidFieldName, validFieldName))
+          val mapper =
+            ObjectMapper()
+              .registerKotlinModule()
+              .registerArrowModule(EitherModuleConfig(invalidFieldName, validFieldName))
 
           testClass.shouldRoundTrip(mapper)
         }
@@ -115,23 +112,19 @@ class ValidatedModuleTest : FunSpec() {
     }
   }
 
-  private data class Foo(@get:JsonProperty("foo") val fooValue: Option<Int>, val otherValue: String)
+  private data class Foo(
+    @get:JsonProperty("foo") val fooValue: Option<Int>,
+    val otherValue: String
+  )
   private data class Bar(val first: Int, val second: String, val third: Boolean)
   private data class TestClass(val validated: Validated<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {
-    Foo(
-      Arb.option(Arb.int()).bind(),
-      Arb.string().bind()
-    )
+    Foo(Arb.option(Arb.int()).bind(), Arb.string().bind())
   }
 
   private val arbBar: Arb<Bar> = arbitrary {
-    Bar(
-      Arb.int().bind(),
-      Arb.string(0..100, Codepoint.alphanumeric()).bind(),
-      Arb.boolean().bind()
-    )
+    Bar(Arb.int().bind(), Arb.string(0..100, Codepoint.alphanumeric()).bind(), Arb.boolean().bind())
   }
 
   private val arbTestClass: Arb<TestClass> = arbitrary {
