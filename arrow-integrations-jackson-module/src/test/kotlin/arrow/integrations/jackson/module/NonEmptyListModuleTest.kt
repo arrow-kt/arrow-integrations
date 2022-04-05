@@ -1,10 +1,12 @@
 package arrow.integrations.jackson.module
 
 import arrow.core.Nel
+import arrow.core.NonEmptyList
 import arrow.core.test.UnitSpec
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
@@ -53,6 +55,19 @@ class NonEmptyListModuleTest : UnitSpec() {
         val decoded: Wrapper = mapper.readValue(encoded, Wrapper::class.java)
 
         decoded shouldBe wrapper
+      }
+    }
+
+    "should round trip on NonEmptyList with wildcard type" {
+      val mapperWithSettings = ObjectMapper().registerKotlinModule().registerArrowModule()
+
+      checkAll(Arb.nonEmptyList(Arb.string())) { original: NonEmptyList<*> ->
+        val deserialized: NonEmptyList<*> = shouldNotThrowAny {
+          val serialized: String = mapperWithSettings.writeValueAsString(original)
+          mapperWithSettings.readValue(serialized, NonEmptyList::class.java)
+        }
+
+        deserialized shouldBe original
       }
     }
   }

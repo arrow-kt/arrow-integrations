@@ -62,9 +62,8 @@ public object NonEmptyListDeserializerResolver : Deserializers.Base() {
     elementDeserializer: JsonDeserializer<*>?
   ): JsonDeserializer<NonEmptyList<*>>? =
     if (NonEmptyList::class.java.isAssignableFrom(type.rawClass)) {
-      StdDelegatingDeserializer<NonEmptyList<*>>(
-        NonEmptyListDeserializationConverter(type.bindings.getBoundType(0))
-      )
+      val boundType = type.bindings.getBoundType(0) ?: config.constructType(Object::class.java)
+      StdDelegatingDeserializer<NonEmptyList<*>>(NonEmptyListDeserializationConverter(boundType))
     } else {
       null
     }

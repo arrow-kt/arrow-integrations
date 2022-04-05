@@ -9,6 +9,7 @@ import arrow.core.valid
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
@@ -78,6 +79,18 @@ class ValidatedModuleTest : FunSpec() {
               .registerArrowModule(EitherModuleConfig(invalidFieldName, validFieldName))
 
           testClass.shouldRoundTrip(mapper)
+        }
+      }
+
+      test("should round-trip with wildcard types") {
+        checkAll(Arb.validated(Arb.int(1..10), Arb.string(10, Codepoint.az()))) {
+          original: Validated<*, *> ->
+          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
+          val serialized = mapper.writeValueAsString(original)
+          val deserialized: Validated<*, *> = shouldNotThrowAny {
+            mapper.readValue(serialized, Validated::class.java)
+          }
+          deserialized shouldBe original
         }
       }
     }

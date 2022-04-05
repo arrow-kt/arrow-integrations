@@ -9,6 +9,7 @@ import arrow.core.test.generators.option
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
@@ -85,6 +86,15 @@ class EitherModuleTest : FunSpec() {
               )
 
           testClass.shouldRoundTrip(mapper)
+        }
+      }
+
+      test("should round-trip on wildcard types") {
+        val mapper = ObjectMapper().registerArrowModule()
+        checkAll(Arb.either(Arb.int(1..10), Arb.string(5))) { original: Either<*, *> ->
+          val serialized = mapper.writeValueAsString(original)
+          val deserialized = shouldNotThrowAny { mapper.readValue(serialized, Either::class.java) }
+          deserialized shouldBe original
         }
       }
     }
