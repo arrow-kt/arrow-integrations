@@ -1,6 +1,6 @@
 [versions]
 arrow = "1.0.1"
-dokka = "1.6.0"
+dokka = "1.6.10"
 arrowGradleConfig = "0.10.0"
 kotlin = "1.6.20"
 kotest = "5.2.2"
