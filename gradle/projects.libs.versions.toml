@@ -1,5 +1,5 @@
 [versions]
-arrow = "1.1.0"
+arrow = "1.1.2"
 dokka = "1.6.20"
 arrowGradleConfig = "0.10.0"
 kotlin = "1.6.21"
