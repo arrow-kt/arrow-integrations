@@ -8,6 +8,12 @@ plugins {
   `java-library`
 }
 
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(8))
+  }
+}
+
 animalsniffer {
   sourceSets = sourceSets.find { it.name == "main" }?.let(::listOf).orEmpty() // Ignore tests
   ignore = listOf("java.lang.*")
