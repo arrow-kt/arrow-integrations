@@ -8,6 +8,7 @@ import arrow.core.test.generators.either
 import arrow.core.test.generators.option
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.core.spec.style.FunSpec
@@ -20,6 +21,7 @@ import io.kotest.property.arbitrary.az
 import io.kotest.property.arbitrary.boolean
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
@@ -94,6 +96,18 @@ class EitherModuleTest : FunSpec() {
         checkAll(Arb.either(Arb.int(1..10), Arb.string(5))) { original: Either<*, *> ->
           val serialized = mapper.writeValueAsString(original)
           val deserialized = shouldNotThrowAny { mapper.readValue(serialized, Either::class.java) }
+          deserialized shouldBe original
+        }
+      }
+
+      test("should round-trip when inside a collection") {
+        val mapper = ObjectMapper().registerArrowModule()
+        checkAll(Arb.list(Arb.either(Arb.int(1..10), Arb.string(5)))) {
+          original: List<Either<Int, String>> ->
+          val serialized: String = mapper.writeValueAsString(original)
+          val deserialized = shouldNotThrowAny {
+            mapper.readValue<List<Either<Int, String>>>(serialized)
+          }
           deserialized shouldBe original
         }
       }
