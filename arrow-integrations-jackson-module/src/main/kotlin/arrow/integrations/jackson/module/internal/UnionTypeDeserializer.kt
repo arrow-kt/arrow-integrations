@@ -36,6 +36,7 @@ public class UnionTypeDeserializer<T>(
               "unexpected deserializer not found"
             }
           val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
+          parser.nextToken()
           injectField.point(value)
         }
       )
