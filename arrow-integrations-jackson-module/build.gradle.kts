@@ -22,3 +22,9 @@ dependencies {
   testImplementation(libs.kotest.property)
   testImplementation(libs.kotest.runnerJUnit5)
 }
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(8))
+  }
+}
