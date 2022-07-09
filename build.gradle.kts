@@ -19,19 +19,28 @@ allprojects {
   group = property("projects.group").toString()
 }
 
+val jvmVersionTarget = 8
 
-tasks {
-  withType<Test> {
-    maxParallelForks = Runtime.getRuntime().availableProcessors()
-    useJUnitPlatform()
-    testLogging {
-      setExceptionFormat("full")
-      setEvents(listOf("passed", "skipped", "failed", "standardOut", "standardError"))
+allprojects {
+  tasks {
+    withType<Test> {
+      maxParallelForks = Runtime.getRuntime().availableProcessors()
+      useJUnitPlatform()
+      testLogging {
+        setExceptionFormat("full")
+        setEvents(listOf("passed", "skipped", "failed", "standardOut", "standardError"))
+      }
     }
-  }
-  withType<KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "1.8"
+
+    withType<JavaCompile>().configureEach {
+      sourceCompatibility = "${JavaVersion.toVersion(jvmVersionTarget)}"
+      targetCompatibility = "${JavaVersion.toVersion(jvmVersionTarget)}"
+    }
+
+    withType<KotlinCompile>().configureEach {
+      kotlinOptions {
+        jvmTarget = "${JavaVersion.toVersion(jvmVersionTarget)}"
+      }
     }
   }
 }
