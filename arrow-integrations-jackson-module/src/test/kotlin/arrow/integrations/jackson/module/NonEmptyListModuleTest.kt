@@ -2,11 +2,11 @@ package arrow.integrations.jackson.module
 
 import arrow.core.Nel
 import arrow.core.NonEmptyList
-import arrow.core.test.UnitSpec
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
@@ -14,12 +14,14 @@ import io.kotest.property.arbitrary.boolean
 import io.kotest.property.arbitrary.choice
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
+import io.kotest.property.arrow.core.nonEmptyList
+import io.kotest.property.checkAll
 
-class NonEmptyListModuleTest : UnitSpec() {
+class NonEmptyListModuleTest : FunSpec() {
   private val mapper = ObjectMapper().registerModule(NonEmptyListModule).registerKotlinModule()
 
   init {
-    "serializing NonEmptyList should be the same as serializing the underlying list" {
+    test("serializing NonEmptyList should be the same as serializing the underlying list") {
       checkAll(
         Arb.nonEmptyList(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))
       ) { list ->
@@ -30,7 +32,9 @@ class NonEmptyListModuleTest : UnitSpec() {
       }
     }
 
-    "serializing NonEmptyList and then deserialize it should be the same as before the deserialization" {
+    test(
+      "serializing NonEmptyList and then deserialize it should be the same as before the deserialization"
+    ) {
       checkAll(
         Arb.choice(
           arbitrary {
@@ -48,7 +52,7 @@ class NonEmptyListModuleTest : UnitSpec() {
       }
     }
 
-    "serializing NonEmptyList in an object should round trip" {
+    test("serializing NonEmptyList in an object should round trip") {
       data class Wrapper(val nel: Nel<SomeObject>)
       checkAll(arbitrary { Wrapper(Arb.nonEmptyList(Arb.someObject()).bind()) }) { wrapper ->
         val encoded: String = mapper.writeValueAsString(wrapper)
@@ -58,7 +62,7 @@ class NonEmptyListModuleTest : UnitSpec() {
       }
     }
 
-    "should round trip on NonEmptyList with wildcard type" {
+    test("should round trip on NonEmptyList with wildcard type") {
       val mapperWithSettings = ObjectMapper().registerKotlinModule().registerArrowModule()
 
       checkAll(Arb.nonEmptyList(Arb.string())) { original: NonEmptyList<*> ->

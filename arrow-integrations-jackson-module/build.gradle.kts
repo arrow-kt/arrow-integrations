@@ -18,7 +18,8 @@ dependencies {
   signature("net.sf.androidscents.signature:android-api-level-21:5.0.1_r2@signature")
   implementation(libs.arrowCore)
   implementation(libs.jacksonModuleKotlin)
-  testImplementation(libs.arrowCoreTest)
   testImplementation(libs.kotest.property)
+  testImplementation(libs.kotest.propertyArrow)
+  testImplementation(libs.kotest.assertionsArrow)
   testImplementation(libs.kotest.runnerJUnit5)
 }

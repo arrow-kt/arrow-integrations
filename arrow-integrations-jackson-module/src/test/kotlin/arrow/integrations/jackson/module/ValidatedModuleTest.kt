@@ -3,8 +3,6 @@ package arrow.integrations.jackson.module
 import arrow.core.Option
 import arrow.core.Validated
 import arrow.core.invalid
-import arrow.core.test.generators.option
-import arrow.core.test.generators.validated
 import arrow.core.valid
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -23,6 +21,8 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
+import io.kotest.property.arrow.core.option
+import io.kotest.property.arrow.core.validated
 import io.kotest.property.checkAll
 
 class ValidatedModuleTest : FunSpec() {

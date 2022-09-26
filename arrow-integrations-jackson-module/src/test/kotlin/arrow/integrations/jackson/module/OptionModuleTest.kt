@@ -2,13 +2,12 @@ package arrow.integrations.jackson.module
 
 import arrow.core.Option
 import arrow.core.some
-import arrow.core.test.UnitSpec
-import arrow.core.test.generators.option
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
@@ -16,12 +15,14 @@ import io.kotest.property.arbitrary.boolean
 import io.kotest.property.arbitrary.choice
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.string
+import io.kotest.property.arrow.core.option
+import io.kotest.property.checkAll
 
-class OptionModuleTest : UnitSpec() {
+class OptionModuleTest : FunSpec() {
   private val mapper = ObjectMapper().registerModule(OptionModule).registerKotlinModule()
 
   init {
-    "serializing Option should be the same as serializing a nullable value" {
+    test("serializing Option should be the same as serializing a nullable value") {
       checkAll(Arb.option(Arb.choice(Arb.someObject(), Arb.int(), Arb.string(), Arb.boolean()))) {
         option ->
         val actual = mapper.writeValueAsString(option)
@@ -31,7 +32,9 @@ class OptionModuleTest : UnitSpec() {
       }
     }
 
-    "serializing Option with Include.NON_ABSENT should honor such configuration and omit serialization when option is empty" {
+    test(
+      "serializing Option with Include.NON_ABSENT should honor such configuration and omit serialization when option is empty"
+    ) {
       val mapperWithSettings =
         ObjectMapper()
           .registerModule(OptionModule)
@@ -50,7 +53,9 @@ class OptionModuleTest : UnitSpec() {
       }
     }
 
-    "serializing Option and then deserialize it should be the same as before the deserialization" {
+    test(
+      "serializing Option and then deserialize it should be the same as before the deserialization"
+    ) {
       checkAll(
         Arb.choice(
           arbitrary { Arb.option(Arb.someObject()).bind() to jacksonTypeRef<Option<SomeObject>>() },
@@ -66,7 +71,7 @@ class OptionModuleTest : UnitSpec() {
       }
     }
 
-    "should round-trip on wildcard types" {
+    test("should round-trip on wildcard types") {
       val mapper = ObjectMapper().registerArrowModule()
       checkAll(Arb.option(Arb.int(1..10))) { original: Option<*> ->
         val serialized = mapper.writeValueAsString(original)

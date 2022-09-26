@@ -5,8 +5,6 @@ import arrow.core.Option
 import arrow.core.bothIor
 import arrow.core.leftIor
 import arrow.core.rightIor
-import arrow.core.test.generators.ior
-import arrow.core.test.generators.option
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -19,12 +17,14 @@ import io.kotest.property.arbitrary.alphanumeric
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.az
 import io.kotest.property.arbitrary.boolean
+import io.kotest.property.arbitrary.choice
 import io.kotest.property.arbitrary.enum
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
+import io.kotest.property.arrow.core.option
 import io.kotest.property.checkAll
 
 class IorModuleTest : FunSpec() {
@@ -174,6 +174,13 @@ class IorModuleTest : FunSpec() {
   }
 
   private val arbTestClass: Arb<TestClass> = arbitrary { TestClass(Arb.ior(arbFoo, arbBar).bind()) }
+
+  private fun <L, R> Arb.Companion.ior(arbL: Arb<L>, arbR: Arb<R>): Arb<Ior<L, R>> =
+    Arb.choice(
+      arbitrary { arbL.bind().leftIor() },
+      arbitrary { arbR.bind().rightIor() },
+      arbitrary { (arbL.bind() to arbR.bind()).bothIor() }
+    )
 
   private val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
 }
