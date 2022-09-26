@@ -4,8 +4,6 @@ import arrow.core.Either
 import arrow.core.Option
 import arrow.core.left
 import arrow.core.right
-import arrow.core.test.generators.either
-import arrow.core.test.generators.option
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -25,6 +23,8 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
+import io.kotest.property.arrow.core.either
+import io.kotest.property.arrow.core.option
 import io.kotest.property.checkAll
 
 class EitherModuleTest : FunSpec() {
