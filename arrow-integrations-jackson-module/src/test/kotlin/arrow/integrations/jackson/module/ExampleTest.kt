@@ -9,6 +9,7 @@ import arrow.core.right
 import arrow.core.some
 import arrow.core.valid
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -16,30 +17,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.net.URI
 
-class ExampleTest :
-  FunSpec({
-    data class Organization(
-      val name: String,
-      val address: Option<String>,
-      val websiteUrl: Option<URI>
-    )
-
-    data class ArrowUser(
-      val name: String,
-      val emails: NonEmptyList<String>,
-      val organization: Option<Organization>
-    )
-
-    val mapper =
-      ObjectMapper()
-        .registerKotlinModule()
-        .registerArrowModule()
-        .setSerializationInclusion(
-          JsonInclude.Include.NON_ABSENT
-        ) // will not serialize None as nulls
-
-    val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
-
+class ExampleTest : FunSpec() {
+  init {
     test("example #1: data structure serialization") {
       val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
       val arrowUser =
@@ -133,4 +112,57 @@ class ExampleTest :
       }
     """.trimIndent()
     }
-  })
+
+    test("example #6: option serialization inclusion JsonInclude.Include.NON_ABSENT") {
+      data class Org(
+        val name: String,
+        val address: Option<String>,
+        @get:JsonProperty("slack_channel") val slackChannel: Option<String>
+      )
+
+      val customMapper =
+        ObjectMapper()
+          .registerKotlinModule()
+          .registerArrowModule()
+          .setSerializationInclusion(
+            JsonInclude.Include.NON_ABSENT
+          ) // will not serialize None as nulls
+
+      val customPrettyPrinter = customMapper.writerWithDefaultPrettyPrinter()
+
+      val arrowKt = Org("arrow-kt", none(), "#arrow".some())
+
+      val jsonString = customPrettyPrinter.writeValueAsString(arrowKt)
+
+      jsonString shouldBe
+        """
+      {
+        "name" : "arrow-kt",
+        "slack_channel" : "#arrow"
+      }
+      """.trimIndent()
+
+      customMapper.readValue(jsonString, Org::class.java) shouldBe arrowKt
+    }
+  }
+
+  private data class Organization(
+    val name: String,
+    val address: Option<String>,
+    val websiteUrl: Option<URI>
+  )
+
+  private data class ArrowUser(
+    val name: String,
+    val emails: NonEmptyList<String>,
+    val organization: Option<Organization>
+  )
+
+  private val mapper =
+    ObjectMapper()
+      .registerKotlinModule()
+      .registerArrowModule()
+      .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // will not serialize None as nulls
+
+  private val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
+}
