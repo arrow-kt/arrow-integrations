@@ -52,7 +52,6 @@ import java.lang.reflect.Type
  *
  *  private data class Example(val nested: TriState<Nested>)
  *
- *
  *  // defining jackson module for TriState<T>
  *  private val tristateModule: GenericTriStateModule<TriState<*>> =
  *    GenericTriStateModule(
@@ -80,6 +79,7 @@ import java.lang.reflect.Type
  *          ifDefined = { TriState.Defined(it) }
  *        )
  *    )
+ * ```
  */
 public class GenericTriStateModule<T>(
   clazz: Class<T>,
