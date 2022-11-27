@@ -28,6 +28,59 @@ import com.fasterxml.jackson.databind.util.AccessPattern
 import com.fasterxml.jackson.databind.util.NameTransformer
 import java.lang.reflect.Type
 
+/**
+ * The [GenericTriStateModule] is a special module that can be used to handle generic types with
+ * optionality. This module can be used to create serialization/deserialization module for bespoke
+ * generic containers with special handling for absence, null, and defined.
+ *
+ * An example for creating a jackson module for `TriState<A>` can be seen as follows.
+ *
+ * ```kotlin
+ *  private sealed class TriState<out A> {
+ *    companion object {
+ *      fun <T> T.defined(): TriState<T> = Defined(this)
+ *      fun <T> absent(): TriState<T> = Absent
+ *      fun <T> nul(): TriState<T> = Null
+ *    }
+ *
+ *    object Absent : TriState<Nothing>()
+ *    object Null : TriState<Nothing>()
+ *    data class Defined<T>(val value: T) : TriState<T>()
+ *  }
+ *
+ *  private data class Nested(val value: String)
+ *
+ *  private data class Example(val nested: TriState<Nested>)
+ *
+ *
+ *  // defining jackson module for TriState<T>
+ *  private val tristateModule: GenericTriStateModule<TriState<*>> =
+ *    GenericTriStateModule(
+ *      serializationConfig =
+ *        GenericTriStateSerializationConfig(
+ *          isPresent = {
+ *            when (it) {
+ *              TriState.Absent -> false
+ *              is TriState.Defined -> true
+ *              TriState.Null -> true
+ *            }
+ *          },
+ *          serializeValue = {
+ *            when (it) {
+ *              TriState.Absent -> SerializedValue.AbsentOrNull
+ *              is TriState.Defined -> SerializedValue.Value(it.value)
+ *              TriState.Null -> SerializedValue.ExplicitNull
+ *            }
+ *          }
+ *        ),
+ *      deserializationConfig =
+ *        GenericTriStateDeserializationConfig(
+ *          ifAbsent = { TriState.Absent },
+ *          ifNull = { TriState.Null },
+ *          ifDefined = { TriState.Defined(it) }
+ *        )
+ *    )
+ */
 public class GenericTriStateModule<T>(
   clazz: Class<T>,
   serializationConfig: GenericTriStateSerializationConfig<T>,
