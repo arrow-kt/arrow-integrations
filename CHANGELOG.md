@@ -11,7 +11,6 @@ Bugfixes:
 - @i-walker Use arrow-gradle-config plugins and move to build.gradle.kts #76
 
 Features:
-
 - @i-walker Upgrade Arrow to 1.1.3 #104
 - @myuwono Introduce support for basic Arrow datatypes including Either, Validated, and Ior #71
 - @myuwono Upgrade Jackson to 2.13.4 #68
