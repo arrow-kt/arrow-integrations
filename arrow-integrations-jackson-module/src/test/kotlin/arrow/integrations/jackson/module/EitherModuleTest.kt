@@ -126,7 +126,8 @@ class EitherModuleTest : FunSpec() {
             }
           }
         }
-      """.trimIndent()
+      """.trimIndent(
+      )
     } else {
       val bar = arbBar.bind()
       """
@@ -139,7 +140,8 @@ class EitherModuleTest : FunSpec() {
             }
           }
         }
-      """.trimIndent()
+      """.trimIndent(
+      )
     }
   }
 

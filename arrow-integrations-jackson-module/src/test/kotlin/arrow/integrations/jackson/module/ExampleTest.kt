@@ -61,7 +61,8 @@ class ExampleTest :
           "websiteUrl" : "https://arrow-kt.io"
         }
       }
-    """.trimIndent()
+    """.trimIndent(
+        )
 
       mapper.readValue(jsonString, ArrowUser::class.java) shouldBe arrowUser
     }
@@ -76,7 +77,8 @@ class ExampleTest :
           "websiteUrl" : "https://arrow-kt.io"
         }
       }
-    """.trimIndent()
+    """.trimIndent(
+        )
     }
 
     test("example #3: either") {
@@ -106,7 +108,8 @@ class ExampleTest :
           "kind" : "leafy greens"
         }
       }
-    """.trimIndent()
+    """.trimIndent(
+        )
     }
 
     test("example #5: customizing field names") {
@@ -131,6 +134,7 @@ class ExampleTest :
           "kind" : "leafy greens"
         }
       }
-    """.trimIndent()
+    """.trimIndent(
+        )
     }
   })

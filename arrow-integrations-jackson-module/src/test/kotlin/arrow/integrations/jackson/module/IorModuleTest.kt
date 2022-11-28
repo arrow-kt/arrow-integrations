@@ -47,7 +47,9 @@ class IorModuleTest : FunSpec() {
       test("should round-trip nested ior types") {
         checkAll(
           Arb.ior(Arb.ior(arbFoo, Arb.int()).orNull(), Arb.ior(Arb.string(), arbBar.orNull()))
-        ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> -> ior.shouldRoundTrip(mapper) }
+        ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> ->
+          ior.shouldRoundTrip(mapper)
+        }
       }
 
       test("should serialize with configurable left / right field name") {
@@ -120,7 +122,8 @@ class IorModuleTest : FunSpec() {
             }
           }
         }
-      """.trimIndent()
+      """.trimIndent(
+        )
       }
       IorPolarity.Both -> {
         val foo = arbFoo.bind()
@@ -139,7 +142,8 @@ class IorModuleTest : FunSpec() {
             }
           }
         }
-        """.trimIndent()
+        """.trimIndent(
+        )
       }
       IorPolarity.Right -> {
         val bar = arbBar.bind()
@@ -153,7 +157,8 @@ class IorModuleTest : FunSpec() {
             }
           }
         }
-        """.trimIndent()
+        """.trimIndent(
+        )
       }
     }
   }

@@ -108,7 +108,8 @@ class ValidatedModuleTest : FunSpec() {
             }
           }
         }
-      """.trimIndent()
+      """.trimIndent(
+      )
     } else {
       val bar = arbBar.bind()
       """
@@ -121,7 +122,8 @@ class ValidatedModuleTest : FunSpec() {
             }
           }
         }
-      """.trimIndent()
+      """.trimIndent(
+      )
     }
   }
 
