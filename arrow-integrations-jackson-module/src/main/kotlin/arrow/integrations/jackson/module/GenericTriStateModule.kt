@@ -4,6 +4,7 @@ import arrow.core.Option
 import arrow.core.getOrElse
 import arrow.core.orElse
 import arrow.core.toOption
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
@@ -99,25 +100,16 @@ public class GenericTriStateModule<T>(
       GenericTriStateModule(T::class.java, serializationConfig, deserializationConfig)
   }
 
-  public val deserializer: GenericTriStateDeserializer<T> =
-    GenericTriStateDeserializer(
-      clazz,
-      deserializationConfig.ifAbsent,
-      deserializationConfig.ifNull,
-      deserializationConfig.ifDefined
-    )
-
-  public val serializerResolver: GenericTriStateSerializerResolver<T> =
-    GenericTriStateSerializerResolver(
-      clazz,
-      serializationConfig.isPresent,
-      serializationConfig.serializeValue
-    )
-
-  public val typeModifier: GenericTriStateTypeModifier<T> = GenericTriStateTypeModifier(clazz)
-
   init {
-    addDeserializer(clazz, deserializer)
+    addDeserializer(
+      clazz,
+      GenericTriStateDeserializer(
+        clazz,
+        deserializationConfig.ifAbsent,
+        deserializationConfig.ifNull,
+        deserializationConfig.ifDefined
+      )
+    )
   }
 
   override fun setupModule(context: SetupContext) {
@@ -125,6 +117,15 @@ public class GenericTriStateModule<T>(
     context.addSerializers(serializerResolver)
     context.addTypeModifier(typeModifier)
   }
+
+  private val serializerResolver: GenericTriStateSerializerResolver<T> =
+    GenericTriStateSerializerResolver(
+      clazz,
+      serializationConfig.isPresent,
+      serializationConfig.serializeValue
+    )
+
+  private val typeModifier: GenericTriStateTypeModifier<T> = GenericTriStateTypeModifier(clazz)
 }
 
 public data class GenericTriStateDeserializationConfig<T>(
@@ -138,7 +139,13 @@ public data class GenericTriStateSerializationConfig<T>(
   val serializeValue: (T) -> SerializedValue
 )
 
-public class GenericTriStateSerializerResolver<T>(
+public sealed class SerializedValue {
+  public object ExplicitNull : SerializedValue()
+  public object AbsentOrNull : SerializedValue()
+  public data class Value(@get:JsonValue val value: Any?) : SerializedValue()
+}
+
+private class GenericTriStateSerializerResolver<T>(
   private val clazz: Class<T>,
   private val isPresent: (T) -> Boolean,
   private val serializeValue: (T) -> SerializedValue
@@ -160,7 +167,7 @@ public class GenericTriStateSerializerResolver<T>(
     }
 }
 
-public class GenericTriStateTypeModifier<T>(private val clazz: Class<T>) : TypeModifier() {
+private class GenericTriStateTypeModifier<T>(private val clazz: Class<T>) : TypeModifier() {
   override fun modifyType(
     type: JavaType,
     jdkType: Type,
@@ -174,25 +181,19 @@ public class GenericTriStateTypeModifier<T>(private val clazz: Class<T>) : TypeM
     }
 }
 
-public sealed class SerializedValue {
-  public object ExplicitNull : SerializedValue()
-  public object AbsentOrNull : SerializedValue()
-  public data class Value(val value: Any?) : SerializedValue()
-}
-
-public class GenericTriStateSerializer<T>(
+private class GenericTriStateSerializer<T>(
   private val isPresent: (T) -> Boolean,
   private val serializeValue: (T) -> SerializedValue
 ) {
-  public inner class GenericSerializer : ReferenceTypeSerializer<T> {
-    public constructor(
+  inner class GenericSerializer : ReferenceTypeSerializer<T> {
+    constructor(
       fullType: ReferenceType,
       staticTyping: Boolean,
       typeSerializer: TypeSerializer?,
       jsonSerializer: JsonSerializer<Any>?
     ) : super(fullType, staticTyping, typeSerializer, jsonSerializer)
 
-    public constructor(
+    constructor(
       base: GenericSerializer,
       property: BeanProperty?,
       typeSerializer: TypeSerializer?,
@@ -236,7 +237,7 @@ public class GenericTriStateSerializer<T>(
       GenericSerializer(this, prop, vts, valueSer, unwrapper, _suppressableValue, _suppressNulls)
   }
 
-  public fun createSerializer(
+  fun createSerializer(
     fullType: ReferenceType,
     staticTyping: Boolean,
     typeSerializer: TypeSerializer?,
@@ -244,7 +245,7 @@ public class GenericTriStateSerializer<T>(
   ): GenericSerializer = GenericSerializer(fullType, staticTyping, typeSerializer, jsonSerializer)
 }
 
-public class GenericTriStateDeserializer<T>(
+private class GenericTriStateDeserializer<T>(
   private val clazz: Class<T>,
   private val ifAbsent: () -> T,
   private val ifNull: () -> T,

@@ -90,6 +90,5 @@ class GenericTriStateModuleTest : FunSpec() {
     ObjectMapper()
       .registerKotlinModule()
       .registerModule(tristateModule)
-      .registerArrowModule()
       .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
 }
