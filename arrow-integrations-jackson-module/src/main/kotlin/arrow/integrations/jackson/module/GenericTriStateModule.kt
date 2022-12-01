@@ -49,10 +49,6 @@ import java.lang.reflect.Type
  *    data class Defined<T>(val value: T) : TriState<T>()
  *  }
  *
- *  private data class Nested(val value: String)
- *
- *  private data class Example(val nested: TriState<Nested>)
- *
  *  // defining jackson module for TriState<T>
  *  private val tristateModule: GenericTriStateModule<TriState<*>> =
  *    GenericTriStateModule(
@@ -80,6 +76,12 @@ import java.lang.reflect.Type
  *          ifDefined = { TriState.Defined(it) }
  *        )
  *    )
+ *
+ *  // consuming TriState<T>
+ *  private data class Nested(val value: String)
+ *
+ *  @JsonInclude(JsonInclude.Include.NON_ABSENT)
+ *  private data class Example(val nested: TriState<Nested>)
  * ```
  */
 public class GenericTriStateModule<T>(
