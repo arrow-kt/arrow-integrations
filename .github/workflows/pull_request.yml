@@ -24,7 +24,7 @@ jobs:
           java-version: '15'
 
       - name: Build and test with Gradle
-        uses: gradle/gradle-build-action@v2.4.0
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments:  build --scan --stacktrace
 
@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build
-        uses: gradle/gradle-build-action@v2.4.0
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: apiDump
 
