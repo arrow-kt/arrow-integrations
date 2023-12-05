@@ -139,6 +139,8 @@ public class OptionDeserializer : JsonDeserializer<Option<*>>(), ContextualDeser
 
   override fun getNullValue(ctxt: DeserializationContext): Option<*> = None
   override fun getEmptyValue(ctxt: DeserializationContext?): Option<*> = None
+  override fun getAbsentValue(ctxt: DeserializationContext?): Option<*> = None
+
   override fun getNullAccessPattern(): AccessPattern = AccessPattern.CONSTANT
   override fun getEmptyAccessPattern(): AccessPattern = AccessPattern.CONSTANT
 }
