@@ -2,7 +2,7 @@
 arrow = "1.1.5"
 dokka = "1.8.10"
 arrowGradleConfig = "0.11.0"
-kotlin = "1.8.21"
+kotlin = "2.0.21"
 kotest = "5.6.2"
 kotlinBinaryCompatibilityValidator = "0.13.2"
 detekt = "1.23.0"
