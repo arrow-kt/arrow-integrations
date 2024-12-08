@@ -68,4 +68,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update API files
-          file_pattern: /**/api/*.api
+          file_pattern: "**/api/*.api"
