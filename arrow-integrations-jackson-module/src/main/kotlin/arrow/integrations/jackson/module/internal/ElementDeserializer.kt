@@ -26,12 +26,14 @@ public data class ElementDeserializer(
     ): ElementDeserializer =
       ElementDeserializer(
         deserializer = context.findContextualValueDeserializer(containedType, property).toOption(),
-        typeDeserializer = option {
-          val prop = property.toOption().bind()
-          BeanDeserializerFactory.instance
-            .findPropertyTypeDeserializer(context.config, containedType, prop.member)
-            .toOption().bind()
-        }
+        typeDeserializer =
+          option {
+            val prop = property.toOption().bind()
+            BeanDeserializerFactory.instance
+              .findPropertyTypeDeserializer(context.config, containedType, prop.member)
+              .toOption()
+              .bind()
+          }
       )
   }
 

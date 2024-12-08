@@ -23,38 +23,42 @@ import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlinx.coroutines.test.runTest
 
 class EitherModuleTest {
-  @Test fun `should round-trip on mandatory types`() = runTest {
+  @Test
+  fun `should round-trip on mandatory types`() = runTest {
     checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
   }
 
-  @Test fun `should serialize in the expected format`() = runTest {
+  @Test
+  fun `should serialize in the expected format`() = runTest {
     checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
   }
 
-  @Test fun `should round-trip nullable types`() = runTest {
+  @Test
+  fun `should round-trip nullable types`() = runTest {
     checkAll(Arb.either(arbFoo.orNull(), arbBar.orNull())) { either: Either<Foo?, Bar?> ->
       either.shouldRoundTrip(mapper)
     }
   }
 
-  @Test fun `should round-trip nested either types`() = runTest {
+  @Test
+  fun `should round-trip nested either types`() = runTest {
     checkAll(
-      Arb.either(
-        Arb.either(arbFoo, Arb.int()).orNull(),
-        Arb.either(Arb.string(), arbBar.orNull())
-      )
+      Arb.either(Arb.either(arbFoo, Arb.int()).orNull(), Arb.either(Arb.string(), arbBar.orNull()))
     ) { either: Either<Either<Foo, Int>?, Either<String, Bar?>> ->
       either.shouldRoundTrip(mapper)
     }
   }
 
-  @Test fun `should serialize with configurable left - right field name`() = runTest {
+  @Test
+  fun `should serialize with configurable left - right field name`() = runTest {
     checkAll(
-      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter { it.first != it.second }
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+        it.first != it.second
+      }
     ) { (leftFieldName, rightFieldName) ->
       val mapper =
         ObjectMapper()
@@ -66,9 +70,12 @@ class EitherModuleTest {
     }
   }
 
-  @Test fun `should round-trip with configurable left - right field name`() = runTest {
+  @Test
+  fun `should round-trip with configurable left - right field name`() = runTest {
     checkAll(
-      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter { it.first != it.second },
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+        it.first != it.second
+      },
       arbTestClass
     ) { (leftFieldName, rightFieldName), testClass ->
       val mapper =
@@ -82,7 +89,8 @@ class EitherModuleTest {
     }
   }
 
-  @Test fun `should round-trip on wildcard types`() = runTest {
+  @Test
+  fun `should round-trip on wildcard types`() = runTest {
     val mapper = ObjectMapper().registerArrowModule()
     checkAll(Arb.either(Arb.int(1..10), Arb.string(5))) { original: Either<*, *> ->
       val serialized = mapper.writeValueAsString(original)
@@ -91,7 +99,8 @@ class EitherModuleTest {
     }
   }
 
-  @Test fun `should round-trip when inside a collection`() = runTest {
+  @Test
+  fun `should round-trip when inside a collection`() = runTest {
     val mapper = ObjectMapper().registerArrowModule()
     checkAll(Arb.list(Arb.either(Arb.int(1..10), Arb.string(5)))) {
       original: List<Either<Int, String>> ->
@@ -115,8 +124,8 @@ class EitherModuleTest {
             }
           }
         }
-      """.trimIndent(
-      )
+      """
+        .trimIndent()
     } else {
       val bar = arbBar.bind()
       """
@@ -129,8 +138,8 @@ class EitherModuleTest {
             }
           }
         }
-      """.trimIndent(
-      )
+      """
+        .trimIndent()
     }
   }
 
@@ -138,7 +147,9 @@ class EitherModuleTest {
     @get:JsonProperty("foo") val fooValue: Option<Int>,
     val otherValue: String
   )
+
   private data class Bar(val first: Int, val second: String, val third: Boolean)
+
   private data class TestClass(val either: Either<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {

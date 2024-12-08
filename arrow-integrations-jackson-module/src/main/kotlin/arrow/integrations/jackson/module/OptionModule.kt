@@ -106,8 +106,11 @@ public class OptionSerializer : ReferenceTypeSerializer<Option<*>> {
     )
 
   override fun _isValuePresent(value: Option<*>): Boolean = value.isSome()
+
   override fun _getReferenced(value: Option<*>): Any? = value.getOrNull()
+
   override fun _getReferencedIfPresent(value: Option<*>): Any? = value.getOrNull()
+
   override fun withResolved(
     prop: BeanProperty?,
     vts: TypeSerializer?,
@@ -119,6 +122,7 @@ public class OptionSerializer : ReferenceTypeSerializer<Option<*>> {
 
 public class OptionDeserializer : JsonDeserializer<Option<*>>(), ContextualDeserializer {
   private lateinit var valueType: JavaType
+
   override fun deserialize(p: JsonParser?, ctxt: DeserializationContext): Option<*> =
     Option.fromNullable(p).map { ctxt.readValue<Any>(it, valueType) }
 
@@ -137,13 +141,17 @@ public class OptionDeserializer : JsonDeserializer<Option<*>>(), ContextualDeser
     return deserializer
   }
 
-  private fun <A> Option<A>.or(other: Option<A>) = when (this) {
-    is Some<A> -> this
-    else -> other
-  }
+  private fun <A> Option<A>.or(other: Option<A>) =
+    when (this) {
+      is Some<A> -> this
+      else -> other
+    }
 
   override fun getNullValue(ctxt: DeserializationContext): Option<*> = None
+
   override fun getEmptyValue(ctxt: DeserializationContext?): Option<*> = None
+
   override fun getNullAccessPattern(): AccessPattern = AccessPattern.CONSTANT
+
   override fun getEmptyAccessPattern(): AccessPattern = AccessPattern.CONSTANT
 }

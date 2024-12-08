@@ -29,19 +29,22 @@ public class ProductTypeDeserializer<T>(
         is arrow.core.Some -> {
           val injectField = field.value
           if (introspectedFields.add(injectField.fieldName)) {
-            val elementDeserializer = requireNotNull(deserializers[injectField.fieldName]) {
-              "unexpected deserializer not found"
-            }
+            val elementDeserializer =
+              requireNotNull(deserializers[injectField.fieldName]) {
+                "unexpected deserializer not found"
+              }
             val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
             params.add(injectField.point(value))
           } else {
-            val message = "Malformed Json: Field collision were detected for ${parser.currentName()}"
+            val message =
+              "Malformed Json: Field collision were detected for ${parser.currentName()}"
             ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message)
           }
         }
         is arrow.core.None -> {
           val validFields = fields.map { it.fieldName }
-          val message = "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
+          val message =
+            "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
           @Suppress("UNCHECKED_CAST")
           ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
         }

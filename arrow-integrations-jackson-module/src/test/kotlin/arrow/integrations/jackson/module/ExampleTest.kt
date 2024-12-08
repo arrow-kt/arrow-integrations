@@ -40,9 +40,7 @@ class ExampleTest {
     ObjectMapper()
       .registerKotlinModule()
       .registerArrowModule()
-      .setSerializationInclusion(
-        JsonInclude.Include.NON_ABSENT
-      ) // will not serialize None as nulls
+      .setSerializationInclusion(JsonInclude.Include.NON_ABSENT) // will not serialize None as nulls
 
   val prettyPrinter = mapper.writerWithDefaultPrettyPrinter()
 
@@ -50,11 +48,7 @@ class ExampleTest {
   fun `example #1 - data structure serialization`() {
     val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
     val arrowUser =
-      ArrowUser(
-        "John Doe",
-        listOf("john@email.com", "john.doe@email.com.au"),
-        arrowKt.some()
-      )
+      ArrowUser("John Doe", listOf("john@email.com", "john.doe@email.com.au"), arrowKt.some())
 
     val jsonString = prettyPrinter.writeValueAsString(arrowUser)
 
@@ -68,12 +62,14 @@ class ExampleTest {
           "websiteUrl" : "https://arrow-kt.io"
         }
       }
-      """.trimIndent()
+      """
+        .trimIndent()
 
     mapper.readValue(jsonString, ArrowUser::class.java) shouldBe arrowUser
   }
 
-  @Ignore @Test
+  @Ignore
+  @Test
   fun `example #2 - data structure serialization - non-empty list`() {
     val arrowKt = Organization("arrow-kt", none(), URI("https://arrow-kt.io").some())
     val arrowUser =
@@ -95,7 +91,8 @@ class ExampleTest {
           "websiteUrl" : "https://arrow-kt.io"
         }
       }
-      """.trimIndent()
+      """
+        .trimIndent()
 
     mapper.readValue(jsonString, ArrowUserNel::class.java) shouldBe arrowUser
   }
@@ -110,7 +107,8 @@ class ExampleTest {
       {
         "right" : "apricot"
       }
-      """.trimIndent()
+      """
+        .trimIndent()
   }
 
   @Test
@@ -129,7 +127,8 @@ class ExampleTest {
           "kind" : "leafy greens"
         }
       }
-      """.trimIndent()
+      """
+        .trimIndent()
   }
 
   @Test
@@ -155,6 +154,7 @@ class ExampleTest {
           "kind" : "leafy greens"
         }
       }
-      """.trimIndent()
+      """
+        .trimIndent()
   }
 }

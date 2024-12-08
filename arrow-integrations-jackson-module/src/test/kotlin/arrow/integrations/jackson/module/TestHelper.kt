@@ -29,8 +29,7 @@ inline fun <reified T> String.shouldRoundTripOtherWay(mapper: ObjectMapper) {
   mapper.readTree(encoded) shouldBe mapper.readTree(this)
 }
 
-fun <B> Arb.Companion.option(arb: Arb<B>): Arb<Option<B>> =
-  arb.orNull().map { it.toOption() }
+fun <B> Arb.Companion.option(arb: Arb<B>): Arb<Option<B>> = arb.orNull().map { it.toOption() }
 
 fun <A, B> Arb.Companion.either(left: Arb<A>, right: Arb<B>): Arb<Either<A, B>> =
   choice(left.map { Either.Left(it) }, right.map { Either.Right(it) })

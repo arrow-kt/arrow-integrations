@@ -24,25 +24,29 @@ import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlinx.coroutines.test.runTest
 
 class IorModuleTest {
-  @Test fun `should round-trip on mandatory types`() = runTest {
+  @Test
+  fun `should round-trip on mandatory types`() = runTest {
     checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
   }
 
-  @Test fun `should serialize in the expected format`() = runTest {
+  @Test
+  fun `should serialize in the expected format`() = runTest {
     checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
   }
 
-  @Test fun `should round-trip nullable types`() = runTest {
+  @Test
+  fun `should round-trip nullable types`() = runTest {
     checkAll(Arb.ior(arbFoo.orNull(), arbBar.orNull())) { ior: Ior<Foo?, Bar?> ->
       ior.shouldRoundTrip(mapper)
     }
   }
 
-  @Test fun `should round-trip nested ior types`() = runTest {
+  @Test
+  fun `should round-trip nested ior types`() = runTest {
     checkAll(
       Arb.ior(Arb.ior(arbFoo, Arb.int()).orNull(), Arb.ior(Arb.string(), arbBar.orNull()))
     ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> ->
@@ -50,7 +54,8 @@ class IorModuleTest {
     }
   }
 
-  @Test fun `should serialize with configurable left - right field name`() = runTest {
+  @Test
+  fun `should serialize with configurable left - right field name`() = runTest {
     checkAll(
       Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
         it.first != it.second
@@ -68,9 +73,12 @@ class IorModuleTest {
     }
   }
 
-  @Test fun `should round-trip with configurable left - right field name`() = runTest {
+  @Test
+  fun `should round-trip with configurable left - right field name`() = runTest {
     checkAll(
-      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter { it.first != it.second },
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+        it.first != it.second
+      },
       arbTestClass
     ) { (leftFieldName, rightFieldName), testClass ->
       val mapper =
@@ -84,7 +92,8 @@ class IorModuleTest {
     }
   }
 
-  @Test fun `should round-trip with wildcard types`() = runTest {
+  @Test
+  fun `should round-trip with wildcard types`() = runTest {
     checkAll(Arb.ior(Arb.int(1..10), Arb.string(10, Codepoint.az()))) { original: Ior<*, *> ->
       val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
       val serialized = mapper.writeValueAsString(original)
@@ -114,8 +123,8 @@ class IorModuleTest {
             }
           }
         }
-      """.trimIndent(
-        )
+      """
+          .trimIndent()
       }
       IorPolarity.Both -> {
         val foo = arbFoo.bind()
@@ -134,8 +143,8 @@ class IorModuleTest {
             }
           }
         }
-        """.trimIndent(
-        )
+        """
+          .trimIndent()
       }
       IorPolarity.Right -> {
         val bar = arbBar.bind()
@@ -149,8 +158,8 @@ class IorModuleTest {
             }
           }
         }
-        """.trimIndent(
-        )
+        """
+          .trimIndent()
       }
     }
   }
@@ -159,7 +168,9 @@ class IorModuleTest {
     @get:JsonProperty("foo") val fooValue: Option<Int>,
     val otherValue: String
   )
+
   private data class Bar(val first: Int, val second: String, val third: Boolean)
+
   private data class TestClass(val ior: Ior<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {

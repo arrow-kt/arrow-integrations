@@ -23,9 +23,10 @@ public class UnionTypeDeserializer<T>(
     return when (val field = fields.firstOrNone { parser.currentName() == it.fieldName }) {
       is arrow.core.Some -> {
         val injectField = field.value
-        val elementDeserializer = requireNotNull(deserializers[injectField.fieldName]) {
-          "unexpected deserializer not found"
-        }
+        val elementDeserializer =
+          requireNotNull(deserializers[injectField.fieldName]) {
+            "unexpected deserializer not found"
+          }
         val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
         parser.nextToken()
         injectField.point(value)
