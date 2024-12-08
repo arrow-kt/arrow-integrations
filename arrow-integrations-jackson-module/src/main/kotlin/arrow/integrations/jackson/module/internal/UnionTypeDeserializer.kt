@@ -20,26 +20,23 @@ public class UnionTypeDeserializer<T>(
 
   override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): T {
     parser.nextToken()
-    return fields
-      .firstOrNone { parser.currentName == it.fieldName }
-      .fold(
-        {
-          val validFields = fields.map { it.fieldName }
-          val message =
-            "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
-          @Suppress("UNCHECKED_CAST")
-          ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
-        },
-        { injectField ->
-          val elementDeserializer =
-            requireNotNull(deserializers[injectField.fieldName]) {
-              "unexpected deserializer not found"
-            }
-          val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
-          parser.nextToken()
-          injectField.point(value)
+    return when (val field = fields.firstOrNone { parser.currentName() == it.fieldName }) {
+      is arrow.core.Some -> {
+        val injectField = field.value
+        val elementDeserializer = requireNotNull(deserializers[injectField.fieldName]) {
+          "unexpected deserializer not found"
         }
-      )
+        val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
+        parser.nextToken()
+        injectField.point(value)
+      }
+      is arrow.core.None -> {
+        val validFields = fields.map { it.fieldName }
+        val message = "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
+        @Suppress("UNCHECKED_CAST")
+        ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
+      }
+    }
   }
 
   override fun createContextual(

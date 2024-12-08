@@ -13,11 +13,9 @@ public class UnionTypeSerializer<T>(clazz: Class<T>, private val fields: List<Pr
   )
 
   override fun serialize(value: T, gen: JsonGenerator, provider: SerializerProvider) {
-    val project =
-      requireNotNull(fields.firstOrNull { it.getOption(value).isDefined() }) {
-        "unexpected failure when attempting projection during serialization"
-      }
-
+    val project = requireNotNull(fields.firstOrNull { it.getOption(value).isSome() }) {
+      "unexpected failure when attempting projection during serialization"
+    }
     gen.writeStartObject()
     project.getOption(value).map { provider.defaultSerializeField(project.fieldName, it, gen) }
     gen.writeEndObject()

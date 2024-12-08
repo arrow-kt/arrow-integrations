@@ -25,32 +25,27 @@ public class ProductTypeDeserializer<T>(
     val introspectedFields: MutableSet<String> = mutableSetOf()
 
     while (parser.nextToken() != JsonToken.END_OBJECT) {
-      fields
-        .firstOrNone { parser.currentName == it.fieldName }
-        .fold(
-          {
-            val validFields = fields.map { it.fieldName }
-            val message =
-              "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
-            @Suppress("UNCHECKED_CAST")
-            ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
-          },
-          { injectField ->
-            if (introspectedFields.add(injectField.fieldName)) {
-              val elementDeserializer =
-                requireNotNull(deserializers[injectField.fieldName]) {
-                  "unexpected deserializer not found"
-                }
-              val value =
-                elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
-              params.add(injectField.point(value))
-            } else {
-              val message =
-                "Malformed Json: Field collision were detected for ${parser.currentName}"
-              ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message)
+      when (val field = fields.firstOrNone { parser.currentName() == it.fieldName }) {
+        is arrow.core.Some -> {
+          val injectField = field.value
+          if (introspectedFields.add(injectField.fieldName)) {
+            val elementDeserializer = requireNotNull(deserializers[injectField.fieldName]) {
+              "unexpected deserializer not found"
             }
+            val value = elementDeserializer.deserialize(javaType, parser.nextToken(), parser, ctxt)
+            params.add(injectField.point(value))
+          } else {
+            val message = "Malformed Json: Field collision were detected for ${parser.currentName()}"
+            ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message)
           }
-        )
+        }
+        is arrow.core.None -> {
+          val validFields = fields.map { it.fieldName }
+          val message = "Cannot deserialize $javaType. Make sure json fields are valid: $validFields."
+          @Suppress("UNCHECKED_CAST")
+          ctxt.handleUnexpectedToken(clazz, parser.currentToken, parser, message) as T
+        }
+      }
     }
 
     return fold(params)
@@ -59,15 +54,16 @@ public class ProductTypeDeserializer<T>(
   override fun createContextual(
     ctxt: DeserializationContext,
     property: BeanProperty?
-  ): JsonDeserializer<*> =
-    ProductTypeDeserializer(clazz, javaType, fields, fold).also { deserializer ->
-      fields.forEachIndexed { index, field ->
-        deserializer.deserializers[field.fieldName] =
-          ElementDeserializer.resolve(
-            ctxt.contextualType.containedTypeOrUnknown(index),
-            ctxt,
-            property
-          )
-      }
+  ): JsonDeserializer<*> {
+    val deserializer = ProductTypeDeserializer(clazz, javaType, fields, fold)
+    for ((index, field) in fields.withIndex()) {
+      deserializer.deserializers[field.fieldName] =
+        ElementDeserializer.resolve(
+          ctxt.contextualType.containedTypeOrUnknown(index),
+          ctxt,
+          property
+        )
     }
+    return deserializer
+  }
 }

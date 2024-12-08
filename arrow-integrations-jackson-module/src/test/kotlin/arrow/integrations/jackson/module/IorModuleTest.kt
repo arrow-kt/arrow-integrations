@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.assertions.throwables.shouldNotThrowAny
-import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.Codepoint
@@ -24,82 +23,75 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
-import io.kotest.property.arrow.core.option
 import io.kotest.property.checkAll
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
 
-class IorModuleTest : FunSpec() {
-  init {
-    context("serialization/deserialization") {
-      test("should round-trip on mandatory types") {
-        checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
+class IorModuleTest {
+  @Test fun `should round-trip on mandatory types`() = runTest {
+    checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
+  }
+
+  @Test fun `should serialize in the expected format`() = runTest {
+    checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
+  }
+
+  @Test fun `should round-trip nullable types`() = runTest {
+    checkAll(Arb.ior(arbFoo.orNull(), arbBar.orNull())) { ior: Ior<Foo?, Bar?> ->
+      ior.shouldRoundTrip(mapper)
+    }
+  }
+
+  @Test fun `should round-trip nested ior types`() = runTest {
+    checkAll(
+      Arb.ior(Arb.ior(arbFoo, Arb.int()).orNull(), Arb.ior(Arb.string(), arbBar.orNull()))
+    ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> ->
+      ior.shouldRoundTrip(mapper)
+    }
+  }
+
+  @Test fun `should serialize with configurable left - right field name`() = runTest {
+    checkAll(
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+        it.first != it.second
       }
+    ) { (leftFieldName, rightFieldName) ->
+      val mapper =
+        ObjectMapper()
+          .registerKotlinModule()
+          .registerArrowModule(iorModuleConfig = IorModuleConfig(leftFieldName, rightFieldName))
 
-      test("should serialize in the expected format") {
-        checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
+      mapper.writeValueAsString(5.leftIor()) shouldBe """{"$leftFieldName":5}"""
+      mapper.writeValueAsString("hello".rightIor()) shouldBe """{"$rightFieldName":"hello"}"""
+      mapper.writeValueAsString(Pair(5, "hello").bothIor()) shouldBe
+        """{"$leftFieldName":5,"$rightFieldName":"hello"}"""
+    }
+  }
+
+  @Test fun `should round-trip with configurable left - right field name`() = runTest {
+    checkAll(
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter { it.first != it.second },
+      arbTestClass
+    ) { (leftFieldName, rightFieldName), testClass ->
+      val mapper =
+        ObjectMapper()
+          .registerKotlinModule()
+          .registerArrowModule(
+            eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
+          )
+
+      testClass.shouldRoundTrip(mapper)
+    }
+  }
+
+  @Test fun `should round-trip with wildcard types`() = runTest {
+    checkAll(Arb.ior(Arb.int(1..10), Arb.string(10, Codepoint.az()))) { original: Ior<*, *> ->
+      val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
+      val serialized = mapper.writeValueAsString(original)
+      val deserialized: Ior<*, *> = shouldNotThrowAny {
+        mapper.readValue(serialized, Ior::class.java)
       }
-
-      test("should round-trip nullable types") {
-        checkAll(Arb.ior(arbFoo.orNull(), arbBar.orNull())) { ior: Ior<Foo?, Bar?> ->
-          ior.shouldRoundTrip(mapper)
-        }
-      }
-
-      test("should round-trip nested ior types") {
-        checkAll(
-          Arb.ior(Arb.ior(arbFoo, Arb.int()).orNull(), Arb.ior(Arb.string(), arbBar.orNull()))
-        ) { ior: Ior<Ior<Foo, Int>?, Ior<String, Bar?>> ->
-          ior.shouldRoundTrip(mapper)
-        }
-      }
-
-      test("should serialize with configurable left / right field name") {
-        checkAll(
-          Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
-            it.first != it.second
-          }
-        ) { (leftFieldName, rightFieldName) ->
-          val mapper =
-            ObjectMapper()
-              .registerKotlinModule()
-              .registerArrowModule(iorModuleConfig = IorModuleConfig(leftFieldName, rightFieldName))
-
-          mapper.writeValueAsString(5.leftIor()) shouldBe """{"$leftFieldName":5}"""
-          mapper.writeValueAsString("hello".rightIor()) shouldBe """{"$rightFieldName":"hello"}"""
-          mapper.writeValueAsString(Pair(5, "hello").bothIor()) shouldBe
-            """{"$leftFieldName":5,"$rightFieldName":"hello"}"""
-        }
-      }
-
-      test("should round-trip with configurable left / right field name") {
-        checkAll(
-          Arb.pair(
-              Arb.string(10, Codepoint.az()),
-              Arb.string(10, Codepoint.az()),
-            )
-            .filter { it.first != it.second },
-          arbTestClass
-        ) { (leftFieldName, rightFieldName), testClass ->
-          val mapper =
-            ObjectMapper()
-              .registerKotlinModule()
-              .registerArrowModule(
-                eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
-              )
-
-          testClass.shouldRoundTrip(mapper)
-        }
-      }
-
-      test("should round-trip with wildcard types") {
-        checkAll(Arb.ior(Arb.int(1..10), Arb.string(10, Codepoint.az()))) { original: Ior<*, *> ->
-          val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()
-          val serialized = mapper.writeValueAsString(original)
-          val deserialized: Ior<*, *> = shouldNotThrowAny {
-            mapper.readValue(serialized, Ior::class.java)
-          }
-          deserialized shouldBe original
-        }
-      }
+      deserialized shouldBe original
     }
   }
 
@@ -117,7 +109,7 @@ class IorModuleTest : FunSpec() {
         {
           "ior": {
             "left": {
-              "foo": ${foo.fooValue.orNull()},
+              "foo": ${foo.fooValue.getOrNull()},
               "otherValue": ${mapper.writeValueAsString(foo.otherValue)}
             }
           }
@@ -132,7 +124,7 @@ class IorModuleTest : FunSpec() {
         {
           "ior": {
             "left": {
-              "foo": ${foo.fooValue.orNull()},
+              "foo": ${foo.fooValue.getOrNull()},
               "otherValue": ${mapper.writeValueAsString(foo.otherValue)}
             },
             "right": {

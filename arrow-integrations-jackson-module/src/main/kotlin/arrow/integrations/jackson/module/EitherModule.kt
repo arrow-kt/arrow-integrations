@@ -1,6 +1,9 @@
 package arrow.integrations.jackson.module
 
 import arrow.core.Either
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
 import arrow.core.left
 import arrow.core.right
 import arrow.integrations.jackson.module.internal.UnionTypeDeserializer
@@ -46,6 +49,8 @@ public class EitherSerializerResolver(leftFieldName: String, rightFieldName: Str
       else -> null
     }
 }
+
+private fun <E, A> Either<E, A>.orNone(): Option<A> = fold({ None }, ::Some)
 
 public class EitherDeserializerResolver(
   private val leftFieldName: String,

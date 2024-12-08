@@ -1,6 +1,9 @@
 package arrow.integrations.jackson.module.internal
 
+import arrow.core.None
 import arrow.core.Option
+import arrow.core.Some
+import arrow.core.raise.option
 import arrow.core.toOption
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
@@ -23,12 +26,12 @@ public data class ElementDeserializer(
     ): ElementDeserializer =
       ElementDeserializer(
         deserializer = context.findContextualValueDeserializer(containedType, property).toOption(),
-        typeDeserializer =
-          property.toOption().flatMap { prop ->
-            BeanDeserializerFactory.instance
-              .findPropertyTypeDeserializer(context.config, containedType, prop.member)
-              .toOption()
-          }
+        typeDeserializer = option {
+          val prop = property.toOption().bind()
+          BeanDeserializerFactory.instance
+            .findPropertyTypeDeserializer(context.config, containedType, prop.member)
+            .toOption().bind()
+        }
       )
   }
 
@@ -38,27 +41,18 @@ public data class ElementDeserializer(
     parser: JsonParser,
     context: DeserializationContext
   ): Any? =
-    when (token) {
-      JsonToken.VALUE_NULL -> null
+    when {
+      token == JsonToken.VALUE_NULL -> null
+      deserializer is Some && typeDeserializer is Some ->
+        deserializer.value.deserializeWithType(parser, context, typeDeserializer.value)
+      deserializer is Some && typeDeserializer is None ->
+        deserializer.value.deserialize(parser, context)
       else ->
-        deserializer.fold(
-          {
-            context.handleUnexpectedToken(
-              javaType.rawClass,
-              token,
-              parser,
-              "no deserializer was found for given type"
-            )
-          },
-          { deserializer ->
-            typeDeserializer.fold(
-              { deserializer.deserialize(parser, context) }, // only deserializer found
-              { typeDeserializer ->
-                // both deserializer and type deserializer found
-                deserializer.deserializeWithType(parser, context, typeDeserializer)
-              }
-            )
-          }
+        context.handleUnexpectedToken(
+          javaType.rawClass,
+          token,
+          parser,
+          "no deserializer was found for given type"
         )
     }
 }

@@ -2,8 +2,8 @@ package arrow.integrations.jackson.module
 
 import arrow.core.None
 import arrow.core.Option
+import arrow.core.Some
 import arrow.core.getOrElse
-import arrow.core.or
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
@@ -105,9 +105,9 @@ public class OptionSerializer : ReferenceTypeSerializer<Option<*>> {
       suppressNulls
     )
 
-  override fun _isValuePresent(value: Option<*>): Boolean = value.isDefined()
-  override fun _getReferenced(value: Option<*>): Any? = value.orNull()
-  override fun _getReferencedIfPresent(value: Option<*>): Any? = value.orNull()
+  override fun _isValuePresent(value: Option<*>): Boolean = value.isSome()
+  override fun _getReferenced(value: Option<*>): Any? = value.getOrNull()
+  override fun _getReferencedIfPresent(value: Option<*>): Any? = value.getOrNull()
   override fun withResolved(
     prop: BeanProperty?,
     vts: TypeSerializer?,
@@ -135,6 +135,11 @@ public class OptionDeserializer : JsonDeserializer<Option<*>>(), ContextualDeser
     val deserializer = OptionDeserializer()
     deserializer.valueType = valueType
     return deserializer
+  }
+
+  private fun <A> Option<A>.or(other: Option<A>) = when (this) {
+    is Some<A> -> this
+    else -> other
   }
 
   override fun getNullValue(ctxt: DeserializationContext): Option<*> = None
