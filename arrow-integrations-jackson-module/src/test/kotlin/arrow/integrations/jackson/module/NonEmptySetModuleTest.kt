@@ -47,7 +47,7 @@ class NonEmptySetModuleTest {
           },
           arbitrary {
             Arb.nonEmptySet(Arb.boolean()).bind() to jacksonTypeRef<NonEmptySet<Boolean>>()
-          }
+          },
         )
       ) { (set, typeReference) ->
         val encoded: String = mapper.writeValueAsString(set)

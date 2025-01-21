@@ -35,14 +35,14 @@ public class EitherSerializerResolver(leftFieldName: String, rightFieldName: Str
       Either::class.java,
       listOf(
         UnionTypeSerializer.ProjectField(leftFieldName) { either -> either.swap().orNone() },
-        UnionTypeSerializer.ProjectField(rightFieldName) { either -> either.orNone() }
+        UnionTypeSerializer.ProjectField(rightFieldName) { either -> either.orNone() },
       ),
     )
 
   override fun findSerializer(
     config: SerializationConfig,
     javaType: JavaType,
-    beanDesc: BeanDescription?
+    beanDesc: BeanDescription?,
   ): JsonSerializer<*>? =
     when {
       Either::class.java.isAssignableFrom(javaType.rawClass) -> serializer
@@ -54,12 +54,12 @@ private fun <E, A> Either<E, A>.orNone(): Option<A> = fold({ None }, ::Some)
 
 public class EitherDeserializerResolver(
   private val leftFieldName: String,
-  private val rightFieldName: String
+  private val rightFieldName: String,
 ) : Deserializers.Base() {
   override fun findBeanDeserializer(
     type: JavaType,
     config: DeserializationConfig,
-    beanDesc: BeanDescription?
+    beanDesc: BeanDescription?,
   ): JsonDeserializer<*>? =
     when {
       Either::class.java.isAssignableFrom(type.rawClass) ->
@@ -68,8 +68,8 @@ public class EitherDeserializerResolver(
           type,
           listOf(
             UnionTypeDeserializer.InjectField(leftFieldName) { leftValue -> leftValue.left() },
-            UnionTypeDeserializer.InjectField(rightFieldName) { rightValue -> rightValue.right() }
-          )
+            UnionTypeDeserializer.InjectField(rightFieldName) { rightValue -> rightValue.right() },
+          ),
         )
       else -> null
     }

@@ -14,7 +14,7 @@ public class ProductTypeDeserializer<T>(
   private val clazz: Class<T>,
   private val javaType: JavaType,
   private val fields: List<InjectField<T>>,
-  private val fold: (List<T>) -> T
+  private val fold: (List<T>) -> T,
 ) : StdDeserializer<T>(clazz), ContextualDeserializer {
   public class InjectField<T>(public val fieldName: String, public val point: (Any?) -> T)
 
@@ -56,7 +56,7 @@ public class ProductTypeDeserializer<T>(
 
   override fun createContextual(
     ctxt: DeserializationContext,
-    property: BeanProperty?
+    property: BeanProperty?,
   ): JsonDeserializer<*> {
     val deserializer = ProductTypeDeserializer(clazz, javaType, fields, fold)
     for ((index, field) in fields.withIndex()) {
@@ -64,7 +64,7 @@ public class ProductTypeDeserializer<T>(
         ElementDeserializer.resolve(
           ctxt.contextualType.containedTypeOrUnknown(index),
           ctxt,
-          property
+          property,
         )
     }
     return deserializer
