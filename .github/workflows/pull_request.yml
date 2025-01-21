@@ -8,9 +8,11 @@ env:
 jobs:
   arrow-integrations_build:
 
-    runs-on:
-      - ubuntu-latest
-      - macos-latest
+    strategy:
+      matrix:
+        platforms: [ ubuntu-latest, macos-latest ]
+
+    runs-on: ${{ matrix.platform }}
     timeout-minutes: 20
 
     steps:
