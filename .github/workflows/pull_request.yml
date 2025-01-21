@@ -8,7 +8,9 @@ env:
 jobs:
   arrow-integrations_build:
 
-    runs-on: ubuntu-latest
+    runs-on:
+      - ubuntu-latest
+      - macos-latest
     timeout-minutes: 20
 
     steps:
