@@ -3,9 +3,7 @@ name: Build Artifacts for PR
 on: pull_request
 
 env:
-  JAVA_OPTS: -Xms512m -Xmx1024m
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dorg.gradle.jvmargs=-Xmx3g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
-
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.kotlin.dsl.internal.io.timeout=120000 -Dorg.gradle.jvmargs="-Xmx5g -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
 
 jobs:
   arrow-integrations_build:
@@ -14,22 +12,26 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v3.11.0
+      - uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: '15'
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Build and test with Gradle
-        uses: gradle/gradle-build-action@v2.4.0
-        with:
-          arguments:  build --scan --stacktrace
+        run: ./gradlew build --scan --stacktrace
 
       - name: Upload reports
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
+        if: failure()
         with:
           name: 'reports-${{ matrix.os }}'
           path: '**/build/reports/**'
@@ -42,20 +44,28 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build
-        uses: gradle/gradle-build-action@v2.4.0
+      - uses: actions/setup-java@v4
         with:
-          arguments: apiDump
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Build
+        run: ./gradlew apiDump
 
       - name: Stop Gradle daemons
         run: ./gradlew --stop
 
       - name: "Commit new API files"
-        uses: stefanzweifel/git-auto-commit-action@v4.16.0
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update API files
-          file_pattern: /**/api/*.api
+          file_pattern: "**/api/*.api"

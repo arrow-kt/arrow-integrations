@@ -8,7 +8,6 @@ import arrow.core.rightIor
 import arrow.core.some
 import arrow.integrations.jackson.module.internal.ProductTypeDeserializer
 import arrow.integrations.jackson.module.internal.ProductTypeSerializer
-import arrow.typeclasses.Semigroup
 import com.fasterxml.jackson.core.json.PackageVersion
 import com.fasterxml.jackson.databind.BeanDescription
 import com.fasterxml.jackson.databind.DeserializationConfig
@@ -81,14 +80,9 @@ public class IorDeserializerResolver(
         ) { iors ->
           // this reduce is safe because an Ior will always have either a left or a right
           iors.reduce { first, second ->
-            first.combine(Semigroup.anyNonNull(), Semigroup.anyNonNull(), second)
+            first.combine(second, { x, y -> y ?: x }, { x, y -> x ?: y })
           }
         }
       else -> null
-    }
-
-  private fun Semigroup.Companion.anyNonNull(): Semigroup<Any?> =
-    object : Semigroup<Any?> {
-      override fun Any?.combine(b: Any?): Any? = b ?: this
     }
 }

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.assertions.throwables.shouldNotThrowAny
-import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.Codepoint
@@ -23,94 +22,93 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.pair
 import io.kotest.property.arbitrary.string
-import io.kotest.property.arrow.core.either
-import io.kotest.property.arrow.core.option
 import io.kotest.property.checkAll
+import kotlin.test.Test
+import kotlinx.coroutines.test.runTest
 
-class EitherModuleTest : FunSpec() {
-  init {
-    context("either serialization/deserialization") {
-      test("should round-trip on mandatory types") {
-        checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
+class EitherModuleTest {
+  @Test
+  fun `should round-trip on mandatory types`() = runTest {
+    checkAll(arbTestClass) { it.shouldRoundTrip(mapper) }
+  }
+
+  @Test
+  fun `should serialize in the expected format`() = runTest {
+    checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
+  }
+
+  @Test
+  fun `should round-trip nullable types`() = runTest {
+    checkAll(Arb.either(arbFoo.orNull(), arbBar.orNull())) { either: Either<Foo?, Bar?> ->
+      either.shouldRoundTrip(mapper)
+    }
+  }
+
+  @Test
+  fun `should round-trip nested either types`() = runTest {
+    checkAll(
+      Arb.either(Arb.either(arbFoo, Arb.int()).orNull(), Arb.either(Arb.string(), arbBar.orNull()))
+    ) { either: Either<Either<Foo, Int>?, Either<String, Bar?>> ->
+      either.shouldRoundTrip(mapper)
+    }
+  }
+
+  @Test
+  fun `should serialize with configurable left - right field name`() = runTest {
+    checkAll(
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+        it.first != it.second
       }
+    ) { (leftFieldName, rightFieldName) ->
+      val mapper =
+        ObjectMapper()
+          .registerKotlinModule()
+          .registerArrowModule(EitherModuleConfig(leftFieldName, rightFieldName))
 
-      test("should serialize in the expected format") {
-        checkAll(arbTestClassJsonString) { it.shouldRoundTripOtherWay<TestClass>(mapper) }
-      }
+      mapper.writeValueAsString(5.left()) shouldBe """{"$leftFieldName":5}"""
+      mapper.writeValueAsString("hello".right()) shouldBe """{"$rightFieldName":"hello"}"""
+    }
+  }
 
-      test("should round-trip nullable types") {
-        checkAll(Arb.either(arbFoo.orNull(), arbBar.orNull())) { either: Either<Foo?, Bar?> ->
-          either.shouldRoundTrip(mapper)
-        }
-      }
-
-      test("should round-trip nested either types") {
-        checkAll(
-          Arb.either(
-            Arb.either(arbFoo, Arb.int()).orNull(),
-            Arb.either(Arb.string(), arbBar.orNull())
+  @Test
+  fun `should round-trip with configurable left - right field name`() = runTest {
+    checkAll(
+      Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
+        it.first != it.second
+      },
+      arbTestClass
+    ) { (leftFieldName, rightFieldName), testClass ->
+      val mapper =
+        ObjectMapper()
+          .registerKotlinModule()
+          .registerArrowModule(
+            eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
           )
-        ) { either: Either<Either<Foo, Int>?, Either<String, Bar?>> ->
-          either.shouldRoundTrip(mapper)
-        }
+
+      testClass.shouldRoundTrip(mapper)
+    }
+  }
+
+  @Test
+  fun `should round-trip on wildcard types`() = runTest {
+    val mapper = ObjectMapper().registerArrowModule()
+    checkAll(Arb.either(Arb.int(1..10), Arb.string(5))) { original: Either<*, *> ->
+      val serialized = mapper.writeValueAsString(original)
+      val deserialized = shouldNotThrowAny { mapper.readValue(serialized, Either::class.java) }
+      deserialized shouldBe original
+    }
+  }
+
+  @Test
+  fun `should round-trip when inside a collection`() = runTest {
+    val mapper = ObjectMapper().registerArrowModule()
+    checkAll(Arb.list(Arb.either(Arb.int(1..10), Arb.string(5)))) {
+      original: List<Either<Int, String>> ->
+      val serialized: String = mapper.writeValueAsString(original)
+      val deserialized = shouldNotThrowAny {
+        mapper.readValue<List<Either<Int, String>>>(serialized)
       }
-
-      test("should serialize with configurable left / right field name") {
-        checkAll(
-          Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
-            it.first != it.second
-          }
-        ) { (leftFieldName, rightFieldName) ->
-          val mapper =
-            ObjectMapper()
-              .registerKotlinModule()
-              .registerArrowModule(EitherModuleConfig(leftFieldName, rightFieldName))
-
-          mapper.writeValueAsString(5.left()) shouldBe """{"$leftFieldName":5}"""
-          mapper.writeValueAsString("hello".right()) shouldBe """{"$rightFieldName":"hello"}"""
-        }
-      }
-
-      test("should round-trip with configurable left / right field name") {
-        checkAll(
-          Arb.pair(
-              Arb.string(10, Codepoint.az()),
-              Arb.string(10, Codepoint.az()),
-            )
-            .filter { it.first != it.second },
-          arbTestClass
-        ) { (leftFieldName, rightFieldName), testClass ->
-          val mapper =
-            ObjectMapper()
-              .registerKotlinModule()
-              .registerArrowModule(
-                eitherModuleConfig = EitherModuleConfig(leftFieldName, rightFieldName)
-              )
-
-          testClass.shouldRoundTrip(mapper)
-        }
-      }
-
-      test("should round-trip on wildcard types") {
-        val mapper = ObjectMapper().registerArrowModule()
-        checkAll(Arb.either(Arb.int(1..10), Arb.string(5))) { original: Either<*, *> ->
-          val serialized = mapper.writeValueAsString(original)
-          val deserialized = shouldNotThrowAny { mapper.readValue(serialized, Either::class.java) }
-          deserialized shouldBe original
-        }
-      }
-
-      test("should round-trip when inside a collection") {
-        val mapper = ObjectMapper().registerArrowModule()
-        checkAll(Arb.list(Arb.either(Arb.int(1..10), Arb.string(5)))) {
-          original: List<Either<Int, String>> ->
-          val serialized: String = mapper.writeValueAsString(original)
-          val deserialized = shouldNotThrowAny {
-            mapper.readValue<List<Either<Int, String>>>(serialized)
-          }
-          deserialized shouldBe original
-        }
-      }
+      deserialized shouldBe original
     }
   }
 
@@ -121,13 +119,13 @@ class EitherModuleTest : FunSpec() {
         {
           "either": {
             "left": {
-              "foo": ${foo.fooValue.orNull()},
+              "foo": ${foo.fooValue.getOrNull()},
               "otherValue": ${mapper.writeValueAsString(foo.otherValue)}
             }
           }
         }
-      """.trimIndent(
-      )
+      """
+        .trimIndent()
     } else {
       val bar = arbBar.bind()
       """
@@ -140,8 +138,8 @@ class EitherModuleTest : FunSpec() {
             }
           }
         }
-      """.trimIndent(
-      )
+      """
+        .trimIndent()
     }
   }
 
@@ -149,7 +147,9 @@ class EitherModuleTest : FunSpec() {
     @get:JsonProperty("foo") val fooValue: Option<Int>,
     val otherValue: String
   )
+
   private data class Bar(val first: Int, val second: String, val third: Boolean)
+
   private data class TestClass(val either: Either<Foo, Bar>)
 
   private val arbFoo: Arb<Foo> = arbitrary {

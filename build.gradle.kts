@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION")
@@ -38,8 +39,8 @@ allprojects {
     }
 
     withType<KotlinCompile>().configureEach {
-      kotlinOptions {
-        jvmTarget = "${JavaVersion.toVersion(jvmVersionTarget)}"
+      compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget("${JavaVersion.toVersion(jvmVersionTarget)}"))
       }
     }
   }
