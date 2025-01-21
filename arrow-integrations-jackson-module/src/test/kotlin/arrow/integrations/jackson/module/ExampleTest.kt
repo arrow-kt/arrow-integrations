@@ -76,7 +76,7 @@ class ExampleTest {
       ArrowUserNel(
         "John Doe",
         nonEmptyListOf("john@email.com", "john.doe@email.com.au"),
-        arrowKt.some()
+        arrowKt.some(),
       )
 
     val jsonString = prettyPrinter.writeValueAsString(arrowUser)

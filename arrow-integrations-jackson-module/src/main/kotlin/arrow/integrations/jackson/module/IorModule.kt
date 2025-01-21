@@ -40,13 +40,13 @@ public class IorSerializerResolver(leftFieldName: String, rightFieldName: String
         ProductTypeSerializer.ProjectField(rightFieldName) { ior ->
           ior.fold({ none() }, { it.some() }, { _, r -> r.some() })
         },
-      )
+      ),
     )
 
   override fun findSerializer(
     config: SerializationConfig,
     type: JavaType,
-    beanDesc: BeanDescription?
+    beanDesc: BeanDescription?,
   ): JsonSerializer<*>? =
     when {
       Ior::class.java.isAssignableFrom(type.rawClass) -> serializer
@@ -56,13 +56,13 @@ public class IorSerializerResolver(leftFieldName: String, rightFieldName: String
 
 public class IorDeserializerResolver(
   private val leftFieldName: String,
-  private val rightFieldName: String
+  private val rightFieldName: String,
 ) : Deserializers.Base() {
 
   override fun findBeanDeserializer(
     javaType: JavaType,
     config: DeserializationConfig,
-    beanDesc: BeanDescription?
+    beanDesc: BeanDescription?,
   ): JsonDeserializer<*>? =
     when {
       Ior::class.java.isAssignableFrom(javaType.rawClass) ->
@@ -76,7 +76,7 @@ public class IorDeserializerResolver(
             ProductTypeDeserializer.InjectField(rightFieldName) { secondValue ->
               secondValue.rightIor()
             },
-          )
+          ),
         ) { iors ->
           // this reduce is safe because an Ior will always have either a left or a right
           iors.reduce { first, second ->

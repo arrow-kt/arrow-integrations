@@ -79,7 +79,7 @@ class IorModuleTest {
       Arb.pair(Arb.string(10, Codepoint.az()), Arb.string(10, Codepoint.az())).filter {
         it.first != it.second
       },
-      arbTestClass
+      arbTestClass,
     ) { (leftFieldName, rightFieldName), testClass ->
       val mapper =
         ObjectMapper()
@@ -107,7 +107,7 @@ class IorModuleTest {
   private enum class IorPolarity {
     Left,
     Both,
-    Right
+    Right,
   }
 
   private val arbTestClassJsonString = arbitrary {
@@ -166,7 +166,7 @@ class IorModuleTest {
 
   private data class Foo(
     @get:JsonProperty("foo") val fooValue: Option<Int>,
-    val otherValue: String
+    val otherValue: String,
   )
 
   private data class Bar(val first: Int, val second: String, val third: Boolean)
@@ -187,7 +187,7 @@ class IorModuleTest {
     Arb.choice(
       arbitrary { arbL.bind().leftIor() },
       arbitrary { arbR.bind().rightIor() },
-      arbitrary { (arbL.bind() to arbR.bind()).bothIor() }
+      arbitrary { (arbL.bind() to arbR.bind()).bothIor() },
     )
 
   private val mapper = ObjectMapper().registerKotlinModule().registerArrowModule()

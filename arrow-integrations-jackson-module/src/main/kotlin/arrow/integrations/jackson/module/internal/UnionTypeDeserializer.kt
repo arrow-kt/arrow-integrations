@@ -42,7 +42,7 @@ public class UnionTypeDeserializer<T>(
 
   override fun createContextual(
     ctxt: DeserializationContext,
-    property: BeanProperty?
+    property: BeanProperty?,
   ): JsonDeserializer<*> =
     UnionTypeDeserializer(clazz, javaType, fields).also { deserializer ->
       fields.forEachIndexed { index, field ->
@@ -50,7 +50,7 @@ public class UnionTypeDeserializer<T>(
           ElementDeserializer.resolve(
             ctxt.contextualType.containedTypeOrUnknown(index),
             ctxt,
-            property
+            property,
           )
       }
     }

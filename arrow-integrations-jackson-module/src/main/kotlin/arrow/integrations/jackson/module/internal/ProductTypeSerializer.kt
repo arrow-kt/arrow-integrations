@@ -9,7 +9,7 @@ public class ProductTypeSerializer<T>(clazz: Class<T>, private val fields: List<
   StdSerializer<T>(clazz) {
   public class ProjectField<T>(
     public val fieldName: String,
-    public val getOption: (T) -> Option<*>
+    public val getOption: (T) -> Option<*>,
   )
 
   override fun serialize(value: T, gen: JsonGenerator, provider: SerializerProvider) {

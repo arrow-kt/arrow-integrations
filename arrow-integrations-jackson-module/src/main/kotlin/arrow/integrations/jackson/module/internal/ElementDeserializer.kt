@@ -16,13 +16,13 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer
 
 public data class ElementDeserializer(
   val deserializer: Option<JsonDeserializer<*>>,
-  val typeDeserializer: Option<TypeDeserializer>
+  val typeDeserializer: Option<TypeDeserializer>,
 ) {
   public companion object {
     public fun resolve(
       containedType: JavaType,
       context: DeserializationContext,
-      property: BeanProperty?
+      property: BeanProperty?,
     ): ElementDeserializer =
       ElementDeserializer(
         deserializer = context.findContextualValueDeserializer(containedType, property).toOption(),
@@ -33,7 +33,7 @@ public data class ElementDeserializer(
               .findPropertyTypeDeserializer(context.config, containedType, prop.member)
               .toOption()
               .bind()
-          }
+          },
       )
   }
 
@@ -41,7 +41,7 @@ public data class ElementDeserializer(
     javaType: JavaType,
     token: JsonToken,
     parser: JsonParser,
-    context: DeserializationContext
+    context: DeserializationContext,
   ): Any? =
     when {
       token == JsonToken.VALUE_NULL -> null
@@ -54,7 +54,7 @@ public data class ElementDeserializer(
           javaType.rawClass,
           token,
           parser,
-          "no deserializer was found for given type"
+          "no deserializer was found for given type",
         )
     }
 }

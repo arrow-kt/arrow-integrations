@@ -60,7 +60,7 @@ class OptionModuleTest {
           arbitrary { Arb.option(Arb.someObject()).bind() to jacksonTypeRef<Option<SomeObject>>() },
           arbitrary { Arb.option(Arb.int()).bind() to jacksonTypeRef<Option<Int>>() },
           arbitrary { Arb.option(Arb.string()).bind() to jacksonTypeRef<Option<String>>() },
-          arbitrary { Arb.option(Arb.boolean()).bind() to jacksonTypeRef<Option<Boolean>>() }
+          arbitrary { Arb.option(Arb.boolean()).bind() to jacksonTypeRef<Option<Boolean>>() },
         )
       ) { (option, typeReference) ->
         val encoded = mapper.writeValueAsString(option)
