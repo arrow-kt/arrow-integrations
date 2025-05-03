@@ -1,15 +1,15 @@
 [versions]
-arrow = "2.0.0"
+arrow = "2.1.0"
 dokka = "2.0.0"
 arrowGradleConfig = "0.12.0-rc.26"
-kotlin = "2.1.0"
-kotest = "6.0.0.M1"
+kotlin = "2.1.20"
+kotest = "6.0.0.M3"
 kotlinBinaryCompatibilityValidator = "0.17.0"
-detekt = "1.23.7"
+detekt = "1.23.8"
 animalsniffer = "1.7.2"
-jacksonModuleKotlin = "2.18.2"
+jacksonModuleKotlin = "2.18.3"
 animalsnifferAnnoation = "1.24"
-coroutines = "1.10.1"
+coroutines = "1.10.2"
 
 [libraries]
 arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
